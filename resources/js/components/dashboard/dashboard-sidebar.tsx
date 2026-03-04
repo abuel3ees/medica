@@ -10,10 +10,10 @@ import {
   LayoutDashboard,
   LogOut,
   Pill,
-  Settings,
   Shield,
   Stethoscope,
   Target,
+  X,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -28,17 +28,19 @@ const ALL_NAV: NavEntry[] = [
   { label: "Medications", href: "/medications", icon: Pill, permission: "view medications" },
 ]
 
-export function DashboardSidebar() {
+interface SidebarProps {
+  onClose?: () => void
+}
+
+function SidebarContent({ onClose }: SidebarProps) {
   const page = usePage()
   const { url } = page
   const user = page.props.auth.user
   const { can, hasRole } = usePermissions()
   const unreadCount = page.props.unreadNotifications ?? 0
 
-  // Filter nav items by permission
   const navItems = ALL_NAV.filter((item) => !item.permission || can(item.permission)).map((item) => ({
     ...item,
-    // Reps see "My Visits" instead of "Visits"
     label: item.href === "/visits" && !can("view all visits") ? "My Visits" : item.label,
   }))
 
@@ -46,27 +48,37 @@ export function DashboardSidebar() {
 
   const initials = user.name
     .split(" ")
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2)
 
+  const handleNav = () => onClose?.()
+
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-border/50 bg-card/80 backdrop-blur-sm">
+    <>
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-border/50 px-5">
-        <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm">
-          <Activity className="h-4 w-4 text-white" />
-          <div className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-accent animate-pulse" />
+      <div className="flex h-16 items-center justify-between border-b border-border/50 px-5">
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm">
+            <Activity className="h-4 w-4 text-white" />
+            <div className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-accent animate-pulse" />
+          </div>
+          <div>
+            <span className="text-sm font-bold tracking-tight text-foreground">Medica</span>
+            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+              {roleLabel} Console
+            </p>
+          </div>
         </div>
-        <div>
-          <span className="text-sm font-bold tracking-tight text-foreground">
-            Medica
-          </span>
-          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-            {roleLabel} Console
-          </p>
-        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground lg:hidden"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       {/* User info */}
@@ -83,7 +95,7 @@ export function DashboardSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex flex-1 flex-col gap-0.5 p-3">
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
         <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
           Navigation
         </p>
@@ -96,6 +108,7 @@ export function DashboardSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={handleNav}
               data-tour={item.href === "/dashboard" ? "dashboard" : item.href === "/visits/create" ? "log-visit" : item.href === "/doctors" ? "doctors" : item.href === "/visits" ? "visits" : item.href === "/objectives" ? "objectives" : item.href === "/medications" ? "medications" : undefined}
               className={cn(
                 "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
@@ -119,6 +132,7 @@ export function DashboardSidebar() {
           </p>
           <Link
             href="/ai-coach"
+            onClick={handleNav}
             data-tour="ai-coach"
             className={cn(
               "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
@@ -135,6 +149,7 @@ export function DashboardSidebar() {
           </Link>
           <Link
             href="/help"
+            onClick={handleNav}
             className={cn(
               "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
               url.startsWith("/help")
@@ -152,6 +167,7 @@ export function DashboardSidebar() {
           {/* Notifications */}
           <Link
             href="/notifications"
+            onClick={handleNav}
             className={cn(
               "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
               url.startsWith("/notifications")
@@ -168,10 +184,11 @@ export function DashboardSidebar() {
             )}
           </Link>
 
-          {/* Admin Panel — only for users with admin access */}
+          {/* Admin Panel */}
           {can("access admin panel") && (
             <Link
               href="/admin"
+              onClick={handleNav}
               className={cn(
                 "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                 url.startsWith("/admin")
@@ -192,13 +209,6 @@ export function DashboardSidebar() {
       {/* Bottom */}
       <div className="flex flex-col gap-0.5 border-t border-border/50 p-3">
         <Link
-          href="/settings/profile"
-          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-secondary/60 hover:text-foreground"
-        >
-          <Settings className="h-4 w-4" />
-          Settings
-        </Link>
-        <Link
           href="/logout"
           method="post"
           as="button"
@@ -208,6 +218,40 @@ export function DashboardSidebar() {
           Sign out
         </Link>
       </div>
+    </>
+  )
+}
+
+/** Desktop sidebar — hidden on mobile */
+export function DashboardSidebar() {
+  return (
+    <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-border/50 bg-card/80 backdrop-blur-sm lg:flex">
+      <SidebarContent />
     </aside>
+  )
+}
+
+/** Mobile sidebar drawer */
+export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 lg:hidden",
+          open ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+        onClick={onClose}
+      />
+      {/* Drawer */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-card shadow-2xl transition-transform duration-300 ease-in-out lg:hidden",
+          open ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <SidebarContent onClose={onClose} />
+      </aside>
+    </>
   )
 }
