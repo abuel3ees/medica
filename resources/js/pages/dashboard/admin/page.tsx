@@ -8,6 +8,7 @@ import {
   Eye,
   EyeOff,
   GraduationCap,
+  Palette,
   Pill,
   Play,
   Plus,
@@ -21,10 +22,10 @@ import {
   Trash2,
   User,
   Users,
-  X,
   Zap,
 } from "lucide-react"
 import { useState } from "react"
+import { PRESET_THEMES, applyTheme, applyDarkOverrides, resetTheme, getStoredThemeId } from "@/lib/themes"
 import DashboardLayout from "../layout"
 
 interface FeatureFlag {
@@ -67,12 +68,13 @@ export default function AdminDashboard() {
   const { stats, dbStats, featureFlags: initialFlags, recentActivity, users: initialUsers } = usePage<{ props: Props }>().props as unknown as Props
   const [flags, setFlags] = useState(initialFlags)
   const [users, setUsers] = useState(initialUsers)
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "flags" | "tutorial" | "database" | "notifications" | "activity">("overview")
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "flags" | "tutorial" | "database" | "notifications" | "activity" | "themes">("overview")
   const [showAddUser, setShowAddUser] = useState(false)
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "rep" })
   const [notifData, setNotifData] = useState({ title: "", body: "", priority: "normal", user_ids: [] as number[] })
   const [showPassword, setShowPassword] = useState(false)
   const [actionFeedback, setActionFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null)
+  const [activeTheme, setActiveTheme] = useState(getStoredThemeId)
 
   const showFeedback = (type: "success" | "error", message: string) => {
     setActionFeedback({ type, message })
@@ -182,6 +184,7 @@ export default function AdminDashboard() {
     { key: "database", label: "Database", icon: Database },
     { key: "notifications", label: "Notify", icon: Bell },
     { key: "activity", label: "Activity", icon: Activity },
+    { key: "themes", label: "Themes", icon: Palette },
   ] as const
 
   return (
@@ -826,6 +829,75 @@ export default function AdminDashboard() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ────────────────── THEMES ────────────────── */}
+        {activeTab === "themes" && (
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h2 className="text-base font-semibold text-foreground sm:text-lg">App Theme</h2>
+              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Choose a color theme for the entire application. Changes apply instantly.</p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {PRESET_THEMES.map((theme) => {
+                const isActive = activeTheme === theme.id
+                return (
+                  <button
+                    key={theme.id}
+                    onClick={() => {
+                      if (theme.id === "terracotta") {
+                        resetTheme()
+                      } else {
+                        applyTheme(theme)
+                        applyDarkOverrides(theme)
+                      }
+                      setActiveTheme(theme.id)
+                      showFeedback("success", `Theme changed to ${theme.name}`)
+                    }}
+                    className={`group relative rounded-xl border p-4 text-left transition-all hover:shadow-md ${
+                      isActive
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                        : "border-border/50 bg-card hover:border-border"
+                    }`}
+                  >
+                    {/* Active badge */}
+                    {isActive && (
+                      <div className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                    )}
+
+                    {/* Color preview */}
+                    <div className="mb-3 flex items-center gap-2">
+                      <div className="flex -space-x-1">
+                        <div className="h-8 w-8 rounded-full border-2 border-white shadow-sm" style={{ background: theme.preview.primary }} />
+                        <div className="h-8 w-8 rounded-full border-2 border-white shadow-sm" style={{ background: theme.preview.accent }} />
+                        <div className="h-8 w-8 rounded-full border-2 border-white shadow-sm" style={{ background: theme.preview.bg }} />
+                      </div>
+                    </div>
+
+                    {/* Theme info */}
+                    <h3 className="text-sm font-semibold text-foreground">{theme.name}</h3>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{theme.description}</p>
+
+                    {/* Mini preview bar */}
+                    <div className="mt-3 flex gap-1.5">
+                      <div className="h-1.5 flex-1 rounded-full" style={{ background: theme.preview.primary }} />
+                      <div className="h-1.5 w-8 rounded-full" style={{ background: theme.preview.accent }} />
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Info */}
+            <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
+              <p className="text-xs text-muted-foreground">
+                <strong className="text-foreground">Note:</strong> Theme preference is stored in your browser. Each user can have their own theme. The selected theme persists across sessions.
+              </p>
+            </div>
           </div>
         )}
       </div>

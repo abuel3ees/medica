@@ -15,7 +15,7 @@ import {
   Bell,
   BookOpen,
 } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 interface CommandItem {
   id: string
@@ -27,12 +27,19 @@ interface CommandItem {
   keywords?: string[]
 }
 
-export function CommandPalette() {
-  const [open, setOpen] = useState(false)
+export function CommandPalette({ externalOpen, onExternalClose }: { externalOpen?: boolean; onExternalClose?: () => void } = {}) {
+  const [internalOpen, setInternalOpen] = useState(false)
   const [query, setQuery] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+
+  const open = externalOpen || internalOpen
+  const setOpen = useCallback((val: boolean | ((prev: boolean) => boolean)) => {
+    const newVal = typeof val === "function" ? val(false) : val
+    setInternalOpen(newVal)
+    if (!newVal) onExternalClose?.()
+  }, [onExternalClose])
 
   const commands: CommandItem[] = [
     { id: "dashboard", label: "Go to Dashboard", icon: LayoutDashboard, action: () => router.visit("/dashboard"), category: "Navigation", keywords: ["home", "overview"] },
@@ -95,6 +102,17 @@ export function CommandPalette() {
 
   const flatFiltered = Object.values(grouped).flat()
 
+  // Handle external open trigger
+  useEffect(() => {
+    if (externalOpen) {
+      setTimeout(() => {
+        setQuery("")
+        setSelectedIndex(0)
+        inputRef.current?.focus()
+      }, 10)
+    }
+  }, [externalOpen])
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -114,7 +132,7 @@ export function CommandPalette() {
     }
     window.addEventListener("keydown", handler)
     return () => window.removeEventListener("keydown", handler)
-  }, [])
+  }, [setOpen])
 
   const handleQueryChange = (value: string) => {
     setQuery(value)

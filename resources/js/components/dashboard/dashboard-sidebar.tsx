@@ -225,7 +225,7 @@ function SidebarContent({ onClose }: SidebarProps) {
 /** Desktop sidebar — hidden on mobile */
 export function DashboardSidebar() {
   return (
-    <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-border/50 bg-card/80 backdrop-blur-sm lg:flex">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border/50 bg-card/80 backdrop-blur-sm lg:flex">
       <SidebarContent />
     </aside>
   )

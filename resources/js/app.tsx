@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import '../css/app.css';
 import { SplashScreen } from './components/splash-screen';
 import { initializeTheme } from './hooks/use-appearance';
+import { initializeTheme as initializeColorTheme } from './lib/themes';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Medica';
 
@@ -61,3 +62,6 @@ createInertiaApp({
 
 // This will set light / dark mode on load...
 initializeTheme();
+
+// Apply saved color theme
+initializeColorTheme();

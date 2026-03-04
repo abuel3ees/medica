@@ -47,7 +47,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           style={{
             fontFamily: "'DM Serif Display', 'Playfair Display', 'Georgia', serif",
             fontWeight: 400,
-            fontSize: "clamp(96px, 17vw, 200px)",
+            fontSize: "clamp(120px, 22vw, 260px)",
             lineHeight: 1,
             letterSpacing: "-0.02em",
             color: "#C46A47",
@@ -62,7 +62,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         <div
           className="flex items-baseline overflow-hidden"
           style={{
-            maxWidth: lettersOut ? "800px" : "0",
+            maxWidth: lettersOut ? "1000px" : "0",
             transition: "max-width 1.4s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
@@ -74,7 +74,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
                 fontFamily:
                   "'DM Serif Display', 'Playfair Display', 'Georgia', serif",
                 fontWeight: 400,
-                fontSize: "clamp(96px, 17vw, 200px)",
+                fontSize: "clamp(120px, 22vw, 260px)",
                 lineHeight: 1,
                 letterSpacing: "-0.02em",
                 color: "#C46A47",
