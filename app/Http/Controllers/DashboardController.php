@@ -231,9 +231,20 @@ class DashboardController extends Controller
         $days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         $data = [];
 
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            // SQLite: strftime('%w') returns 0=Sunday, 1=Monday, ..., 6=Saturday
+            $dowExpr = "strftime('%w', visit_date)";
+        } else {
+            // MySQL: DAYOFWEEK() returns 1=Sunday, 2=Monday, ..., 7=Saturday
+            // Subtract 1 to align with SQLite's 0-based numbering
+            $dowExpr = "(DAYOFWEEK(visit_date) - 1)";
+        }
+
         $visits = Visit::recent(90)
             ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
-            ->select(DB::raw("strftime('%w', visit_date) as dow"), DB::raw('count(*) as cnt'))
+            ->select(DB::raw("{$dowExpr} as dow"), DB::raw('count(*) as cnt'))
             ->groupBy('dow')
             ->pluck('cnt', 'dow')
             ->toArray();
@@ -241,9 +252,9 @@ class DashboardController extends Controller
         $maxCount = max(array_values($visits) ?: [1]);
 
         foreach ($days as $idx => $day) {
-            // SQLite strftime('%w'): 0=Sunday, 1=Monday, ...
-            $sqliteDow = ($idx + 1) % 7; // Mon=1, Tue=2, ..., Sun=0
-            $count = $visits[$sqliteDow] ?? 0;
+            // dow: 0=Sunday, 1=Monday, ..., 6=Saturday (both drivers now aligned)
+            $dow = ($idx + 1) % 7; // Mon=1, Tue=2, ..., Sun=0
+            $count = $visits[$dow] ?? 0;
             // Normalize to 0-5 scale
             $data[] = [
                 'day'   => $day,

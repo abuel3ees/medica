@@ -322,15 +322,32 @@ class AdminController extends Controller
 
     private function getDatabaseSize(): string
     {
-        $path = database_path('database.sqlite');
-        if (file_exists($path)) {
-            $bytes = filesize($path);
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            $path = database_path('database.sqlite');
+            if (file_exists($path)) {
+                $bytes = filesize($path);
+                if ($bytes >= 1048576) {
+                    return round($bytes / 1048576, 2) . ' MB';
+                }
+                return round($bytes / 1024, 2) . ' KB';
+            }
+            return 'N/A';
+        }
+
+        // MySQL / MariaDB
+        try {
+            $dbName = DB::connection()->getDatabaseName();
+            $result = DB::select("SELECT SUM(data_length + index_length) AS size FROM information_schema.TABLES WHERE table_schema = ?", [$dbName]);
+            $bytes = $result[0]->size ?? 0;
             if ($bytes >= 1048576) {
                 return round($bytes / 1048576, 2) . ' MB';
             }
             return round($bytes / 1024, 2) . ' KB';
+        } catch (\Exception $e) {
+            return 'N/A';
         }
-        return 'N/A';
     }
 
     private function getTableStats(): array

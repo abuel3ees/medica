@@ -77,10 +77,20 @@ class AiCoachController extends Controller
         $insights = [];
 
         // Reps with declining scores
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            $recent = 'date("now", "-14 days")';
+            $older  = 'date("now", "-28 days")';
+        } else {
+            $recent = 'DATE_SUB(NOW(), INTERVAL 14 DAY)';
+            $older  = 'DATE_SUB(NOW(), INTERVAL 28 DAY)';
+        }
+
         $decliningReps = DB::table('visits')
             ->select('rep_id')
-            ->selectRaw('AVG(CASE WHEN visit_date >= date("now", "-14 days") THEN efficiency_score END) as recent_avg')
-            ->selectRaw('AVG(CASE WHEN visit_date < date("now", "-14 days") AND visit_date >= date("now", "-28 days") THEN efficiency_score END) as older_avg')
+            ->selectRaw("AVG(CASE WHEN visit_date >= {$recent} THEN efficiency_score END) as recent_avg")
+            ->selectRaw("AVG(CASE WHEN visit_date < {$recent} AND visit_date >= {$older} THEN efficiency_score END) as older_avg")
             ->whereNotNull('efficiency_score')
             ->groupBy('rep_id')
             ->havingRaw('recent_avg < older_avg * 0.85')
