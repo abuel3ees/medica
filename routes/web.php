@@ -13,11 +13,14 @@ use App\Http\Controllers\VisitController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Models\FeatureFlag;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
-Route::inertia('/', 'welcome', [
-    'canRegister' => false,
-    'demoMode' => fn () => FeatureFlag::isEnabled('demo_mode'),
-])->name('home');
+Route::get('/', function () {
+    return Inertia::render('welcome', [
+        'canRegister' => false,
+        'demoMode' => FeatureFlag::isEnabled('demo_mode'),
+    ]);
+})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
