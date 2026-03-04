@@ -19,6 +19,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // Trust DigitalOcean load balancer proxies (SSL termination)
         $middleware->trustProxies(at: '*');
 
+        // Exclude JSON API endpoints from CSRF verification
+        // (they're behind auth middleware and use session cookies)
+        $middleware->validateCsrfTokens(except: [
+            'ai-coach/ask',
+            'notifications/*',
+            'admin/*',
+        ]);
+
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,
