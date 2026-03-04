@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button"
-import type { Auth } from "@/types"
 import { router, usePage } from "@inertiajs/react"
 import {
   AlertTriangle,
@@ -7,20 +5,33 @@ import {
   BarChart3,
   Bot,
   Brain,
-  CheckCircle2,
   Clock,
   ExternalLink,
+  History,
   Lightbulb,
   Loader2,
+  MessageSquarePlus,
   Send,
   Shield,
   Sparkles,
   Target,
   Timer,
+  Trash2,
   TrendingUp,
   Trophy,
 } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
+
+import { Button } from "@/components/ui/button"
+import {
+  addMessage as saveMessage,
+  createSession,
+  deleteSession,
+  getSessions,
+  getSession,
+  groupSessionsByDate,
+} from "@/lib/chat-history"
+import type { Auth } from "@/types"
 
 import DashboardLayout from "../layout"
 
@@ -190,27 +201,72 @@ export default function AiCoachPage() {
   const user = auth.user
   const firstName = (user?.name ?? "User").split(" ")[0]
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content:
-        `Hey ${firstName}! 👋 I'm your **AI Performance Coach**.\n\n` +
-        `I can help you with:\n` +
-        `• Improving your **efficiency scores**\n` +
-        `• Strategies for **difficult doctors**\n` +
-        `• **Objective planning** and visit prep\n` +
-        `• **Time management** tips\n` +
-        `• **Follow-up** tracking\n\n` +
-        `Ask me anything or tap a quick action below!`,
-      timestamp: new Date(),
-    },
-  ])
+  // Chat history state
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [sessions, setSessions] = useState(() => getSessions())
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
+
+  const makeWelcome = useCallback((): ChatMessage => ({
+    id: "welcome",
+    role: "assistant",
+    content:
+      `Hey ${firstName}! 👋 I'm your **AI Performance Coach**.\n\n` +
+      `I can help you with:\n` +
+      `• Improving your **efficiency scores**\n` +
+      `• Strategies for **difficult doctors**\n` +
+      `• **Objective planning** and visit prep\n` +
+      `• **Time management** tips\n` +
+      `• **Follow-up** tracking\n\n` +
+      `Ask me anything or tap a quick action below!`,
+    timestamp: new Date(),
+  }), [firstName])
+
+  const [messages, setMessages] = useState<ChatMessage[]>([makeWelcome()])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [thinkingPhase, setThinkingPhase] = useState<"thinking" | "typing" | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const refreshSessions = useCallback(() => setSessions(getSessions()), [])
+
+  // Start a new chat
+  const startNewChat = useCallback(() => {
+    setActiveSessionId(null)
+    setMessages([makeWelcome()])
+    setInput("")
+    setHistoryOpen(false)
+  }, [makeWelcome])
+
+  // Load a past session
+  const loadSession = useCallback((id: string) => {
+    const session = getSession(id)
+    if (!session) return
+    setActiveSessionId(id)
+    const loaded: ChatMessage[] = session.messages.map((m, i) => ({
+      id: `${m.role}-${i}`,
+      role: m.role,
+      content: m.content,
+      timestamp: new Date(m.timestamp),
+    }))
+    setMessages(loaded.length > 0 ? loaded : [makeWelcome()])
+    setHistoryOpen(false)
+  }, [makeWelcome])
+
+  // Delete a session
+  const handleDeleteSession = useCallback((id: string) => {
+    deleteSession(id)
+    refreshSessions()
+    if (activeSessionId === id) startNewChat()
+  }, [activeSessionId, refreshSessions, startNewChat])
+
+  const ensureSession = useCallback(() => {
+    if (activeSessionId) return activeSessionId
+    const s = createSession()
+    setActiveSessionId(s.id)
+    refreshSessions()
+    return s.id
+  }, [activeSessionId, refreshSessions])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -220,7 +276,7 @@ export default function AiCoachPage() {
     scrollToBottom()
   }, [messages, scrollToBottom])
 
-  const typewriterReveal = useCallback((fullText: string, actions?: ChatAction[]) => {
+  const typewriterReveal = useCallback((fullText: string, actions?: ChatAction[], sid?: string) => {
     setThinkingPhase("typing")
     const msgId = `assistant-${Date.now()}`
     setMessages((prev) => [...prev, {
@@ -245,6 +301,10 @@ export default function AiCoachPage() {
         setThinkingPhase(null)
         setIsLoading(false)
         inputRef.current?.focus()
+        if (sid) {
+          saveMessage(sid, { role: "assistant", content: fullText, timestamp: new Date().toISOString() })
+          refreshSessions()
+        }
       } else {
         setMessages((prev) => {
           const copy = [...prev]
@@ -253,11 +313,13 @@ export default function AiCoachPage() {
         })
       }
     }, 15)
-  }, [])
+  }, [refreshSessions])
 
   const sendMessage = useCallback(
     async (text: string) => {
       if (!text.trim() || isLoading) return
+
+      const sid = ensureSession()
 
       const userMsg: ChatMessage = {
         id: `user-${Date.now()}`,
@@ -270,6 +332,8 @@ export default function AiCoachPage() {
       setInput("")
       setIsLoading(true)
       setThinkingPhase("thinking")
+
+      saveMessage(sid, { role: "user", content: text.trim(), timestamp: new Date().toISOString() })
 
       try {
         const response = await fetch("/ai-coach/ask", {
@@ -289,7 +353,7 @@ export default function AiCoachPage() {
           throw new Error("Bad response")
         }
 
-        typewriterReveal(data.reply, data.actions ?? [])
+        typewriterReveal(data.reply, data.actions ?? [], sid)
       } catch {
         setThinkingPhase(null)
         setIsLoading(false)
@@ -305,7 +369,7 @@ export default function AiCoachPage() {
         inputRef.current?.focus()
       }
     },
-    [isLoading, typewriterReveal],
+    [isLoading, typewriterReveal, ensureSession],
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -365,6 +429,63 @@ export default function AiCoachPage() {
               ))}
             </div>
           </div>
+
+          {/* Chat History section at bottom of insights panel */}
+          <div className="border-t border-border/50">
+            <button
+              onClick={() => setHistoryOpen(!historyOpen)}
+              className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <span className="flex items-center gap-2">
+                <History className="h-4 w-4" />
+                Chat History
+              </span>
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] tabular-nums">{sessions.length}</span>
+            </button>
+
+            {historyOpen && (
+              <div className="max-h-60 overflow-y-auto border-t border-border/30 p-2">
+                <button
+                  onClick={startNewChat}
+                  className="mb-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+                >
+                  <MessageSquarePlus className="h-3.5 w-3.5" />
+                  New Chat
+                </button>
+
+                {groupSessionsByDate(sessions).map((group) => (
+                  <div key={group.label}>
+                    <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">{group.label}</p>
+                    {group.sessions.map((s) => (
+                      <div
+                        key={s.id}
+                        className={`group flex items-center gap-2 rounded-lg px-3 py-1.5 transition-colors ${
+                          s.id === activeSessionId ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                        }`}
+                      >
+                        <button
+                          onClick={() => loadSession(s.id)}
+                          className="flex-1 truncate text-left text-[11px]"
+                        >
+                          {s.title}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSession(s.id)}
+                          className="shrink-0 rounded p-0.5 text-muted-foreground/40 opacity-0 transition-all hover:text-destructive group-hover:opacity-100"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+
+                {sessions.length === 0 && (
+                  <p className="px-3 py-4 text-center text-[11px] text-muted-foreground/50">No saved chats yet</p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Main chat area */}
@@ -387,6 +508,13 @@ export default function AiCoachPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={startNewChat}
+                className="rounded-lg border border-border/50 p-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                title="New chat"
+              >
+                <MessageSquarePlus className="h-4 w-4" />
+              </button>
               <span className="rounded-full bg-primary/10 px-3 py-1 text-[10px] font-medium text-primary">
                 Rule-based AI
               </span>

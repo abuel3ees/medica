@@ -1,98 +1,105 @@
 import { Button } from "@/components/ui/button"
 import { Link } from "@inertiajs/react"
-import { ArrowRight, CheckCircle2, Star } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden">
-      {/* Subtle gradient wash */}
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-primary/[0.03] via-transparent to-transparent" />
+    <section className="relative overflow-hidden pb-20 pt-12 md:pb-32 md:pt-20">
+      <div className="mx-auto max-w-6xl px-6">
+        {/* Two-column asymmetric layout */}
+        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+          {/* Left — copy */}
+          <div>
+            <div className="mb-5 inline-flex rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary animate-landing-fade-in">
+              For pharma field teams
+            </div>
 
-      <div className="mx-auto max-w-5xl px-6 pb-24 pt-20 md:pb-32 md:pt-28">
-        <div className="flex flex-col items-center text-center">
-          {/* Pill badge */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-4 py-1.5 animate-fade-in">
-            <Star className="h-3.5 w-3.5 text-primary" />
-            <span className="text-[12px] font-medium text-primary">Built for medical teams</span>
+            <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[1.08] tracking-tight text-foreground animate-landing-fade-in [animation-delay:100ms]">
+              Stop guessing.
+              <br />
+              <span className="text-primary">Start measuring.</span>
+            </h1>
+
+            <p className="mt-5 max-w-md text-[15px] leading-[1.7] text-muted-foreground animate-landing-fade-in [animation-delay:200ms]">
+              Medica gives medical reps one place to log doctor visits, track objectives, and see exactly how they're performing — with scores that actually mean something.
+            </p>
+
+            <div className="mt-8 flex items-center gap-3 animate-landing-fade-in [animation-delay:300ms]">
+              <Link href="/register">
+                <Button className="h-11 rounded-lg bg-foreground px-6 text-background hover:bg-foreground/90">
+                  Start free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/#demo">
+                <Button variant="ghost" className="h-11 px-5 text-muted-foreground">
+                  Try the demo
+                </Button>
+              </Link>
+            </div>
+
+            <div className="mt-8 flex items-center gap-6 text-[12px] text-muted-foreground/70 animate-landing-fade-in [animation-delay:400ms]">
+              <span>No credit card</span>
+              <span className="h-3 w-px bg-border" />
+              <span>Works instantly</span>
+              <span className="h-3 w-px bg-border" />
+              <span>Free tier available</span>
+            </div>
           </div>
 
-          {/* Headline */}
-          <h1 className="max-w-3xl text-balance text-4xl font-bold leading-[1.1] tracking-tight text-foreground animate-fade-in-up sm:text-5xl lg:text-6xl">
-            Track visits.
-            <br />
-            <span className="text-primary">Grow performance.</span>
-          </h1>
-
-          {/* Subheadline */}
-          <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground animate-fade-in-up" style={{ animationDelay: "80ms" }}>
-            Medica helps medical reps and managers log doctor visits, measure what matters, and get smarter with every interaction.
-          </p>
-
-          {/* CTA buttons */}
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row animate-fade-in-up" style={{ animationDelay: "160ms" }}>
-            <Link href="/register">
-              <Button size="lg" className="gap-2 rounded-xl bg-primary px-8 text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-xl">
-                Get started free
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/#demo">
-              <Button variant="outline" size="lg" className="rounded-xl border-border/50 px-8">
-                Try the demo
-              </Button>
-            </Link>
-          </div>
-
-          {/* Trust signals */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] text-muted-foreground animate-fade-in-up" style={{ animationDelay: "240ms" }}>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-accent" />
-              No credit card required
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-accent" />
-              Instant setup
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-accent" />
-              AI coaching included
-            </span>
-          </div>
-
-          {/* Preview mockup card */}
-          <div className="mt-16 w-full max-w-3xl animate-fade-in-up" style={{ animationDelay: "320ms" }}>
-            <div className="overflow-hidden rounded-2xl border border-border/30 bg-card/90 shadow-2xl shadow-primary/5 backdrop-blur-sm">
-              {/* Window bar */}
-              <div className="flex items-center gap-2 border-b border-border/20 bg-muted/30 px-4 py-2.5">
-                <div className="flex gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-red-400/60" />
-                  <div className="h-2.5 w-2.5 rounded-full bg-amber-400/60" />
-                  <div className="h-2.5 w-2.5 rounded-full bg-green-400/60" />
-                </div>
-                <div className="mx-auto rounded-md bg-background/60 px-12 py-1 text-[10px] text-muted-foreground/50">
+          {/* Right — product preview */}
+          <div className="relative animate-landing-fade-in [animation-delay:350ms]">
+            <div className="overflow-hidden rounded-xl border border-border/40 bg-card shadow-xl">
+              {/* Browser chrome */}
+              <div className="flex items-center gap-1.5 border-b border-border/30 bg-muted/40 px-3 py-2">
+                <div className="h-2 w-2 rounded-full bg-muted-foreground/20" />
+                <div className="h-2 w-2 rounded-full bg-muted-foreground/20" />
+                <div className="h-2 w-2 rounded-full bg-muted-foreground/20" />
+                <div className="ml-3 flex-1 rounded-md bg-background/50 px-4 py-0.5 text-[9px] text-muted-foreground/40">
                   medica.app/dashboard
                 </div>
               </div>
-              {/* Preview content */}
-              <div className="grid grid-cols-3 gap-3 p-5">
-                {[
-                  { label: "Visits this week", value: "24", change: "+18%" },
-                  { label: "Avg. efficiency", value: "87%", change: "+5%" },
-                  { label: "Doctors reached", value: "12", change: "+3" },
-                ].map((stat) => (
-                  <div key={stat.label} className="rounded-xl border border-border/20 bg-background/60 p-3 text-center">
-                    <p className="text-[10px] font-medium text-muted-foreground">{stat.label}</p>
-                    <p className="mt-1 text-xl font-bold tabular-nums text-foreground">{stat.value}</p>
-                    <p className="mt-0.5 text-[10px] font-medium text-accent">{stat.change}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-border/20 px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-                  <span className="text-[10px] text-muted-foreground">Live dashboard preview</span>
+
+              {/* Dashboard mockup */}
+              <div className="p-4">
+                {/* Top stats row */}
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: "This week", val: "24 visits" },
+                    { label: "Avg score", val: "8.4 / 10" },
+                    { label: "Doctors", val: "12 active" },
+                  ].map((s) => (
+                    <div key={s.label} className="rounded-lg border border-border/20 bg-background/60 p-2.5">
+                      <p className="text-[9px] text-muted-foreground">{s.label}</p>
+                      <p className="mt-0.5 text-sm font-semibold text-foreground">{s.val}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Mini visit list */}
+                <div className="mt-3 space-y-1.5">
+                  <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground/60">Recent visits</p>
+                  {[
+                    { doc: "Dr. Sarah Chen", score: "9.2", time: "2h ago" },
+                    { doc: "Dr. Ahmad Nouri", score: "7.8", time: "Yesterday" },
+                    { doc: "Dr. Lisa Park", score: "8.6", time: "2 days ago" },
+                  ].map((v) => (
+                    <div key={v.doc} className="flex items-center justify-between rounded-md bg-background/40 px-2.5 py-1.5">
+                      <div>
+                        <p className="text-[11px] font-medium text-foreground">{v.doc}</p>
+                        <p className="text-[9px] text-muted-foreground">{v.time}</p>
+                      </div>
+                      <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">{v.score}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
+            </div>
+
+            {/* Floating badge */}
+            <div className="absolute -bottom-4 -left-4 rounded-lg border border-border/30 bg-card px-3 py-2 shadow-lg animate-landing-float">
+              <p className="text-[10px] text-muted-foreground">AI suggestion</p>
+              <p className="text-[11px] font-medium text-foreground">"Follow up with Dr. Chen this week"</p>
             </div>
           </div>
         </div>

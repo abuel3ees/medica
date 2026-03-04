@@ -1,10 +1,11 @@
-import { Link, usePage } from "@inertiajs/react"
-import { Activity, Bell, Menu, Search } from "lucide-react"
+import { usePage } from "@inertiajs/react"
+import { Activity, Menu, Search } from "lucide-react"
 import { useState } from "react"
 import { CommandPalette } from "@/components/command-palette"
 import { DashboardSidebar, MobileSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { FloatingAI } from "@/components/floating-ai"
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts"
+import { NotificationDropdown } from "@/components/notification-dropdown"
 import { OnboardingTutorial } from "@/components/onboarding-tutorial"
 
 export default function DashboardLayout({
@@ -43,6 +44,7 @@ export default function DashboardLayout({
           {/* Command palette trigger bar */}
           <button
             onClick={() => setCmdOpen(true)}
+            data-tour="command-palette"
             className="ml-auto flex h-9 flex-1 max-w-md items-center gap-2 rounded-xl border border-border/60 bg-background/60 px-3 text-sm text-muted-foreground backdrop-blur-sm transition-all hover:border-border hover:bg-background lg:ml-0"
           >
             <Search className="h-4 w-4 shrink-0" />
@@ -53,18 +55,8 @@ export default function DashboardLayout({
             </kbd>
           </button>
 
-          {/* Notification bell */}
-          <Link
-            href="/notifications"
-            className="relative ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground lg:ml-0"
-          >
-            <Bell className="h-5 w-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-0.5 text-[9px] font-bold text-white">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </Link>
+          {/* Notification dropdown */}
+          <NotificationDropdown unreadCount={unreadCount} />
         </header>
 
         <main className="flex-1 overflow-y-auto">

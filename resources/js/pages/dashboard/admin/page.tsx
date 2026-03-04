@@ -3,24 +3,20 @@ import {
   Activity,
   Bell,
   Check,
-  ChevronRight,
   Database,
   Eye,
   EyeOff,
   GraduationCap,
   Palette,
-  Pill,
   Play,
   Plus,
   RefreshCcw,
   Send,
   Shield,
   Stethoscope,
-  Target,
   ToggleLeft,
   ToggleRight,
   Trash2,
-  User,
   Users,
   Zap,
 } from "lucide-react"
@@ -167,14 +163,10 @@ export default function AdminDashboard() {
   }
 
   const statCards = [
-    { label: "Total Users", value: stats.total_users, icon: Users, accent: "bg-primary/10 text-primary" },
-    { label: "Reps", value: stats.total_reps, icon: User, accent: "bg-accent/10 text-accent" },
-    { label: "Managers", value: stats.total_managers, icon: Shield, accent: "bg-primary/10 text-primary" },
-    { label: "Total Visits", value: stats.total_visits, icon: Activity, accent: "bg-accent/10 text-accent" },
-    { label: "Doctors", value: stats.total_doctors, icon: Stethoscope, accent: "bg-primary/10 text-primary" },
-    { label: "Objectives", value: stats.total_objectives, icon: Target, accent: "bg-accent/10 text-accent" },
-    { label: "Medications", value: stats.total_medications, icon: Pill, accent: "bg-primary/10 text-primary" },
-    { label: "Avg Efficiency", value: stats.avg_efficiency, icon: Zap, accent: "bg-accent/10 text-accent" },
+    { label: "Users", value: stats.total_users, icon: Users, accent: "text-primary", sub: `${stats.total_reps} reps · ${stats.total_managers} mgrs` },
+    { label: "Visits", value: stats.total_visits, icon: Activity, accent: "text-accent", sub: `${stats.visits_today} today · ${stats.visits_this_week} this week` },
+    { label: "Doctors", value: stats.total_doctors, icon: Stethoscope, accent: "text-primary", sub: `${stats.total_objectives} objectives` },
+    { label: "Efficiency", value: stats.avg_efficiency, icon: Zap, accent: "text-accent", sub: `${stats.total_medications} medications` },
   ]
 
   const tabs = [
@@ -202,28 +194,45 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">Dev Console</h1>
-            <p className="text-xs text-muted-foreground sm:text-sm">System administration & monitoring</p>
+        {/* Header — compact, no wasted space */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground">
+              <Shield className="h-4.5 w-4.5 text-background" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-foreground">Dev Console</h1>
+              <p className="text-[11px] text-muted-foreground">Administration · Monitoring · Config</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/15 px-3 py-1 text-xs font-medium text-green-600 dark:text-green-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-              Online
-            </span>
-          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/15 px-2.5 py-1 text-[10px] font-medium text-green-600 dark:text-green-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+            Live
+          </span>
         </div>
 
-        {/* Tabs — horizontally scrollable on mobile */}
+        {/* Dense stat strip — single row */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {statCards.map((card) => (
+            <div key={card.label} className="rounded-xl border border-border/40 bg-card px-3 py-2.5 sm:px-4 sm:py-3">
+              <div className="flex items-center gap-2">
+                <card.icon className={`h-4 w-4 ${card.accent}`} />
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{card.label}</span>
+              </div>
+              <p className="mt-1 text-xl font-bold tabular-nums text-foreground">{card.value}</p>
+              <p className="text-[10px] text-muted-foreground/70">{card.sub}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs — compact pills */}
         <div className="-mx-4 overflow-x-auto px-4 sm:-mx-6 sm:px-6">
           <div className="inline-flex min-w-full gap-1 rounded-xl border border-border/50 bg-muted/30 p-1">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all sm:text-sm ${
+                className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
                   activeTab === tab.key
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -238,66 +247,124 @@ export default function AdminDashboard() {
 
         {/* ────────────────── OVERVIEW ────────────────── */}
         {activeTab === "overview" && (
-          <div className="space-y-6 animate-fade-in">
-            {/* Stat cards */}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
-              {statCards.map((card) => (
-                <div key={card.label} className="group rounded-xl border border-border/50 bg-card p-3 transition-all hover:border-border hover:shadow-sm sm:p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground sm:text-xs">{card.label}</p>
-                    <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${card.accent} sm:h-8 sm:w-8`}>
-                      <card.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </div>
-                  </div>
-                  <p className="mt-1.5 text-xl font-bold text-foreground sm:mt-2 sm:text-2xl">{card.value}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Quick stats + Feature flag summary */}
-            <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
-              <div className="rounded-xl border border-border/50 bg-card p-4 sm:p-5">
-                <div className="mb-4 flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-                    <Activity className="h-3.5 w-3.5 text-primary" />
-                  </div>
+          <div className="grid gap-4 animate-fade-in lg:grid-cols-2">
+            {/* Left column */}
+            <div className="space-y-4">
+              {/* Visit activity sparkline area */}
+              <div className="rounded-xl border border-border/50 bg-card p-4">
+                <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-foreground">Visit Activity</h3>
+                  <span className="text-[10px] font-medium text-muted-foreground">Last 30 days</span>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {[
-                    { label: "Today", value: stats.visits_today },
-                    { label: "This week", value: stats.visits_this_week },
-                    { label: "This month", value: stats.visits_this_month },
-                    { label: "Unread notifications", value: stats.unread_notifications },
+                    { label: "Today", value: stats.visits_today, max: Math.max(Number(stats.visits_this_month) || 1, 1) },
+                    { label: "This week", value: stats.visits_this_week, max: Math.max(Number(stats.visits_this_month) || 1, 1) },
+                    { label: "This month", value: stats.visits_this_month, max: Math.max(Number(stats.visits_this_month) || 1, 1) },
                   ].map((row) => (
-                    <div key={row.label} className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">{row.label}</span>
-                      <span className="font-semibold tabular-nums text-foreground">{row.value}</span>
+                    <div key={row.label}>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">{row.label}</span>
+                        <span className="font-semibold tabular-nums text-foreground">{row.value}</span>
+                      </div>
+                      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted/50">
+                        <div
+                          className="h-full rounded-full bg-primary/70 transition-all duration-500"
+                          style={{ width: `${Math.min(100, (Number(row.value) / row.max) * 100)}%` }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border/50 bg-card p-4 sm:p-5">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10">
-                      <ToggleRight className="h-3.5 w-3.5 text-accent" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-foreground">Feature Flags</h3>
-                  </div>
-                  <button onClick={() => setActiveTab("flags")} className="text-xs text-muted-foreground transition-colors hover:text-foreground">
-                    View all <ChevronRight className="inline h-3 w-3" />
-                  </button>
+              {/* Feature flags quick view */}
+              <div className="rounded-xl border border-border/50 bg-card p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">Feature Flags</h3>
+                  <button onClick={() => setActiveTab("flags")} className="text-[10px] text-primary hover:underline">Manage →</button>
                 </div>
-                <div className="space-y-2.5">
-                  {flags.slice(0, 5).map((flag) => (
-                    <div key={flag.id} className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">{flag.name}</span>
-                      <span className={`inline-flex items-center gap-1 text-xs font-medium ${flag.enabled ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${flag.enabled ? "bg-green-500" : "bg-red-500"}`} />
-                        {flag.enabled ? "On" : "Off"}
-                      </span>
+                <div className="space-y-1.5">
+                  {flags.map((flag) => (
+                    <div key={flag.id} className="flex items-center justify-between rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/30">
+                      <span className="text-xs text-muted-foreground">{flag.name}</span>
+                      <button
+                        onClick={() => toggleFlag(flag)}
+                        className={`flex h-5 w-9 items-center rounded-full transition-colors ${flag.enabled ? "bg-green-500" : "bg-muted"}`}
+                      >
+                        <span className={`h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform ${flag.enabled ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right column */}
+            <div className="space-y-4">
+              {/* Recent users */}
+              <div className="rounded-xl border border-border/50 bg-card p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">Users</h3>
+                  <button onClick={() => setActiveTab("users")} className="text-[10px] text-primary hover:underline">All users →</button>
+                </div>
+                <div className="space-y-1.5">
+                  {users.slice(0, 6).map((u) => (
+                    <div key={u.id} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/30">
+                      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                        u.role === "admin" ? "bg-primary/15 text-primary" :
+                        u.role === "manager" ? "bg-accent/15 text-accent" :
+                        "bg-muted text-muted-foreground"
+                      }`}>
+                        {u.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-medium text-foreground">{u.name}</p>
+                        <p className="truncate text-[10px] text-muted-foreground">{u.email}</p>
+                      </div>
+                      <span className="text-[10px] tabular-nums text-muted-foreground">{u.visits_count ?? 0} visits</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent activity */}
+              <div className="rounded-xl border border-border/50 bg-card p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">Activity</h3>
+                  <button onClick={() => setActiveTab("activity")} className="text-[10px] text-primary hover:underline">Full log →</button>
+                </div>
+                {recentActivity.length === 0 ? (
+                  <p className="py-4 text-center text-xs text-muted-foreground/50">No activity yet</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {recentActivity.slice(0, 5).map((entry) => (
+                      <div key={entry.id} className="flex items-start gap-2 rounded-lg px-2 py-1.5">
+                        <div className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/30" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-medium text-foreground">{entry.user}</span>{" "}
+                            {entry.action.replace(/_/g, " ")}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground/50">{entry.time}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Database summary */}
+              <div className="rounded-xl border border-border/50 bg-card p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">Database</h3>
+                  <span className="text-[10px] font-medium tabular-nums text-muted-foreground">{dbStats.size}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {dbStats.tables.slice(0, 6).map((t) => (
+                    <div key={t.name} className="rounded-lg bg-muted/30 px-2 py-1.5 text-center">
+                      <p className="text-sm font-bold tabular-nums text-foreground">{t.rows}</p>
+                      <p className="text-[9px] text-muted-foreground">{t.name}</p>
                     </div>
                   ))}
                 </div>

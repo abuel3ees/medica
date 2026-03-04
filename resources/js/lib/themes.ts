@@ -198,6 +198,34 @@ export const PRESET_FONTS: FontPreset[] = [
     fallback: "ui-sans-serif, system-ui, sans-serif",
     sampleText: "Distinctive character with a techy edge",
   },
+  {
+    id: "poppins",
+    name: "Poppins",
+    family: "Poppins",
+    fallback: "ui-sans-serif, system-ui, sans-serif",
+    sampleText: "Geometric and friendly — a universal favorite",
+  },
+  {
+    id: "lato",
+    name: "Lato",
+    family: "Lato",
+    fallback: "ui-sans-serif, system-ui, sans-serif",
+    sampleText: "Warm yet professional, great for body text",
+  },
+  {
+    id: "rubik",
+    name: "Rubik",
+    family: "Rubik",
+    fallback: "ui-sans-serif, system-ui, sans-serif",
+    sampleText: "Slightly rounded corners with a playful feel",
+  },
+  {
+    id: "source-sans",
+    name: "Source Sans 3",
+    family: "Source Sans 3",
+    fallback: "ui-sans-serif, system-ui, sans-serif",
+    sampleText: "Adobe's open-source workhorse — highly readable",
+  },
 ]
 
 const THEME_STORAGE_KEY = "medica-theme"

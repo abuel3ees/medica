@@ -1,12 +1,20 @@
 import { router, usePage } from "@inertiajs/react"
 import {
+  ArrowLeft,
   ArrowRight,
+  Bell,
   Bot,
   ClipboardPlus,
+  Command,
+  Keyboard,
   LayoutDashboard,
+  Pill,
   Stethoscope,
+  Target,
   X,
   Sparkles,
+  BookOpen,
+  Activity,
 } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 
@@ -14,6 +22,7 @@ interface TutorialStep {
   id: string
   title: string
   description: string
+  tip?: string
   icon: React.ElementType
   targetSelector?: string
   navigateTo?: string
@@ -24,16 +33,16 @@ const STEPS: TutorialStep[] = [
   {
     id: "welcome",
     title: "Welcome to Medica! 👋",
-    description:
-      "Let's take a quick tour. I'll guide you through the key features — this takes about 30 seconds. You can skip anytime.",
+    description: "This tour will walk you through everything — your dashboard, logging visits, managing doctors, using the AI coach, and more. Takes about 2 minutes.",
+    tip: "You can skip or resume anytime. Your progress is saved.",
     icon: Sparkles,
     position: "center",
   },
   {
     id: "dashboard",
     title: "Your Dashboard",
-    description:
-      "This is your command center. See efficiency scores, visit trends, top doctors, and AI-powered next steps — all at a glance.",
+    description: "This is your home base. You'll see your efficiency score, recent visits, top doctors, and AI-generated next steps. Everything updates in real time as you log visits.",
+    tip: "Tip: The score at the top is your rolling average. It goes up when you hit your objectives consistently.",
     icon: LayoutDashboard,
     navigateTo: "/dashboard",
     targetSelector: '[data-tour="dashboard"]',
@@ -42,8 +51,8 @@ const STEPS: TutorialStep[] = [
   {
     id: "log_visit",
     title: "Log a Visit",
-    description:
-      "After every doctor meeting, log it here. Select the doctor, objectives discussed, add notes — the AI calculates your efficiency score automatically.",
+    description: "After meeting a doctor, log it here. Select the doctor, check off the objectives you discussed, rate how well each went, and add any notes. The efficiency score is calculated automatically.",
+    tip: "Tip: Logging visits the same day gives you the most accurate data. Setting next steps earns you bonus points.",
     icon: ClipboardPlus,
     navigateTo: "/dashboard",
     targetSelector: '[data-tour="log-visit"]',
@@ -52,22 +61,95 @@ const STEPS: TutorialStep[] = [
   {
     id: "doctors",
     title: "Doctor Directory",
-    description:
-      "View all your doctors, see individual trends, and track relationship progress over time. Click any doctor for detailed analytics.",
+    description: "Your full list of doctors. Click any doctor to see their complete profile — visit history, how your relationship has evolved, which objectives work best, and suggested next actions.",
+    tip: "Tip: Difficult doctors give you a 1.15× score multiplier. Don't avoid them!",
     icon: Stethoscope,
     navigateTo: "/dashboard",
     targetSelector: '[data-tour="doctors"]',
     position: "right",
   },
   {
+    id: "visits",
+    title: "Visit History",
+    description: "See every visit you've logged, sorted by date. Filter by doctor, date range, or score. Click any visit to see its full breakdown — objectives, scores, notes, and AI feedback.",
+    tip: "Tip: Managers can see all reps' visits here. Reps only see their own.",
+    icon: Activity,
+    navigateTo: "/dashboard",
+    targetSelector: '[data-tour="visits"]',
+    position: "right",
+  },
+  {
+    id: "objectives",
+    title: "Objectives",
+    description: "These are the goals you track during visits — things like Product Presentation, Sample Drop, or Clinical Data Sharing. Each has a category, importance level, and weight that affects your score.",
+    tip: "Tip: Focus on high-weight objectives to maximize your efficiency score.",
+    icon: Target,
+    navigateTo: "/dashboard",
+    targetSelector: '[data-tour="objectives"]',
+    position: "right",
+  },
+  {
+    id: "medications",
+    title: "Medications",
+    description: "Manage your product catalog here. Add medications with their details so you can reference them when logging visits and tracking which products you've discussed with each doctor.",
+    icon: Pill,
+    navigateTo: "/dashboard",
+    targetSelector: '[data-tour="medications"]',
+    position: "right",
+  },
+  {
     id: "ai_coach",
     title: "AI Coach",
-    description:
-      "Your personal AI assistant. Ask about performance, get suggestions, and receive coaching tips. Also available via the floating button!",
+    description: "Your personal performance assistant. Ask it anything — 'How can I improve my score?', 'Which doctors need attention?', 'What should I focus on this week?' It knows all your data.",
+    tip: "Tip: The AI coach is also available as a floating button on every page. You can ask it quick questions without leaving what you're doing.",
     icon: Bot,
     navigateTo: "/dashboard",
     targetSelector: '[data-tour="ai-coach"]',
     position: "right",
+  },
+  {
+    id: "help",
+    title: "Help & Documentation",
+    description: "Full documentation with guides on scoring, visit logging, objectives, the AI coach, and more. If you're ever unsure how something works, check here first.",
+    icon: BookOpen,
+    navigateTo: "/dashboard",
+    targetSelector: '[data-tour="help"]',
+    position: "right",
+  },
+  {
+    id: "notifications",
+    title: "Notifications",
+    description: "The bell icon in the top bar shows your notifications. Managers can send you updates, the system alerts you about overdue follow-ups, and the AI coach can nudge you with suggestions.",
+    tip: "Tip: Click the bell to see all notifications in a dropdown. You can mark them read or dismiss them.",
+    icon: Bell,
+    navigateTo: "/dashboard",
+    targetSelector: '[data-tour="notifications"]',
+    position: "bottom",
+  },
+  {
+    id: "command_palette",
+    title: "Command Palette",
+    description: "Press ⌘K (or Ctrl+K) anywhere to open the command palette. Search for pages, actions, doctors, or settings. It's the fastest way to navigate Medica.",
+    tip: "Tip: Try searching 'log visit' or a doctor's name. You can also click the search bar in the top header.",
+    icon: Command,
+    navigateTo: "/dashboard",
+    targetSelector: '[data-tour="command-palette"]',
+    position: "bottom",
+  },
+  {
+    id: "shortcuts",
+    title: "Keyboard Shortcuts",
+    description: "Power users love these. Press ? to see all available shortcuts. You can navigate, search, and take actions without touching the mouse.",
+    icon: Keyboard,
+    position: "center",
+  },
+  {
+    id: "finish",
+    title: "You're all set! 🎉",
+    description: "That's everything. Start by logging your first visit — the more data you add, the smarter Medica gets. Your AI coach will have personalized insights within a few visits.",
+    tip: "If you ever want to replay this tour, ask your admin to reset it from the Dev Console.",
+    icon: Sparkles,
+    position: "center",
   },
 ]
 
@@ -192,22 +274,27 @@ export function OnboardingTutorial() {
   const step = STEPS[currentStep]
 
   const goToStep = (nextIndex: number) => {
-    const token = document.querySelector<HTMLMetaElement>(
-      'meta[name="csrf-token"]',
-    )?.content
-    fetch("/onboarding/complete-step", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-TOKEN": token ?? "",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({ step: step.id }),
-    }).catch(() => {})
+    // Save progress for the current step when going forward
+    if (nextIndex > currentStep) {
+      const token = document.querySelector<HTMLMetaElement>(
+        'meta[name="csrf-token"]',
+      )?.content
+      fetch("/onboarding/complete-step", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": token ?? "",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ step: step.id }),
+      }).catch(() => {})
+    }
 
-    if (nextIndex >= STEPS.length) {
-      setDismissed(true)
-      sessionStorage.setItem("medica_tutorial_dismissed", "1")
+    if (nextIndex >= STEPS.length || nextIndex < 0) {
+      if (nextIndex >= STEPS.length) {
+        setDismissed(true)
+        sessionStorage.setItem("medica_tutorial_dismissed", "1")
+      }
       return
     }
 
@@ -326,6 +413,11 @@ export function OnboardingTutorial() {
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               {step.description}
             </p>
+            {step.tip && (
+              <p className="mt-2 rounded-lg bg-primary/5 px-2.5 py-1.5 text-[11px] leading-relaxed text-primary/80">
+                {step.tip}
+              </p>
+            )}
           </div>
         </div>
 
@@ -339,15 +431,27 @@ export function OnboardingTutorial() {
 
         {/* Actions */}
         <div className="mt-4 flex items-center justify-between">
-          <button
-            onClick={skipTutorial}
-            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Skip tour
-          </button>
+          <div className="flex items-center gap-2">
+            {currentStep > 0 && (
+              <button
+                onClick={() => goToStep(currentStep - 1)}
+                disabled={navigating}
+                className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+              >
+                <ArrowLeft className="h-3 w-3" />
+                Back
+              </button>
+            )}
+            <button
+              onClick={skipTutorial}
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Skip
+            </button>
+          </div>
           <div className="flex items-center gap-3">
-            <span className="text-[10px] text-muted-foreground">
-              {currentStep + 1} of {STEPS.length}
+            <span className="text-[10px] tabular-nums text-muted-foreground">
+              {currentStep + 1}/{STEPS.length}
             </span>
             <button
               onClick={() => goToStep(currentStep + 1)}

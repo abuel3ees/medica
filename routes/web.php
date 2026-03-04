@@ -94,7 +94,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $progress[$request->step] = true;
         $user->update(['onboarding_progress' => $progress]);
 
-        $allSteps = ['welcome', 'dashboard', 'log_visit', 'doctors', 'ai_coach'];
+        $allSteps = ['welcome', 'dashboard', 'log_visit', 'doctors', 'visits', 'objectives', 'medications', 'ai_coach', 'help', 'notifications', 'command_palette', 'shortcuts', 'finish'];
         if (count(array_intersect_key(array_flip($allSteps), array_filter($progress))) === count($allSteps)) {
             $user->update(['onboarding_completed' => true]);
         }

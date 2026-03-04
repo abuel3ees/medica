@@ -3,67 +3,62 @@ import { BarChart3, Bot, ClipboardList, Stethoscope, Target, Users } from "lucid
 const FEATURES = [
   {
     icon: ClipboardList,
-    title: "Simple visit logging",
-    description: "Record every doctor interaction in seconds. Pick a doctor, set your goals, note the outcome — done.",
-    accent: "bg-primary/10 text-primary",
+    title: "Visit logging",
+    description: "Pick a doctor, check off your objectives, add a note. Takes 30 seconds after every meeting.",
+  },
+  {
+    icon: BarChart3,
+    title: "Efficiency scores",
+    description: "Each visit gets a score based on what you accomplished vs. what you planned. No guesswork.",
   },
   {
     icon: Stethoscope,
     title: "Doctor profiles",
-    description: "See the full picture for each physician — visit history, preferences, and how the relationship is evolving.",
-    accent: "bg-accent/10 text-accent",
-  },
-  {
-    icon: BarChart3,
-    title: "Performance scoring",
-    description: "Every visit gets a clear score based on goals met and difficulty. Know exactly where you stand.",
-    accent: "bg-primary/10 text-primary",
+    description: "Full history for every physician — past visits, what worked, what to try next time.",
   },
   {
     icon: Users,
-    title: "Team dashboard",
-    description: "Managers see how every rep is performing — leaderboards, territory maps, and trend charts at a glance.",
-    accent: "bg-accent/10 text-accent",
+    title: "Team oversight",
+    description: "Managers see every rep's numbers, trends, and territory coverage in one view.",
   },
   {
     icon: Bot,
-    title: "AI coaching",
-    description: "Get personalized tips to improve. Ask questions, spot patterns, and learn from what's working.",
-    accent: "bg-primary/10 text-primary",
+    title: "AI coach",
+    description: "Ask it anything. It knows your data and gives you specific, actionable suggestions.",
   },
   {
     icon: Target,
-    title: "Objectives tracking",
-    description: "Set goals, track progress, and see exactly which objectives are being met across your team.",
-    accent: "bg-accent/10 text-accent",
+    title: "Objective tracking",
+    description: "Set goals, assign weights, track completion. Know which objectives move the needle.",
   },
 ]
 
 export function FeaturesGrid() {
   return (
-    <section id="features" className="py-24">
-      <div className="mx-auto max-w-5xl px-6">
-        <div className="mb-16 text-center animate-fade-in-up">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary">Features</p>
-          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Everything your team needs
+    <section id="features" className="py-20 md:py-28">
+      <div className="mx-auto max-w-6xl px-6">
+        {/* Section header — left-aligned, not centered */}
+        <div className="mb-12 max-w-lg">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-primary animate-landing-fade-in">What's inside</p>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl animate-landing-fade-in [animation-delay:80ms]">
+            The tools your field team actually needs
           </h2>
-          <p className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-muted-foreground">
-            From logging a quick visit to reviewing team-wide analytics — Medica covers the whole workflow.
+          <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground animate-landing-fade-in [animation-delay:160ms]">
+            No bloat. Every feature exists because a real medical rep asked for it.
           </p>
         </div>
 
-        <div className="stagger-children grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((feature) => (
+        {/* 3-column grid with stagger */}
+        <div className="grid gap-px overflow-hidden rounded-xl border border-border/40 bg-border/40 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((feature, i) => (
             <div
               key={feature.title}
-              className="group rounded-2xl border border-border/30 bg-card/80 p-6 backdrop-blur-sm transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-primary/[0.03]"
+              className="bg-card p-6 transition-colors duration-200 hover:bg-card/90 animate-landing-fade-in"
+              style={{ animationDelay: `${200 + i * 80}ms` }}
             >
-              <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${feature.accent} transition-transform duration-300 group-hover:scale-110`}>
-                <feature.icon className="h-5 w-5" />
-              </div>
-              <h3 className="text-[15px] font-semibold text-foreground">{feature.title}</h3>
-              <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{feature.description}</p>
+              <feature.icon className="mb-3 h-5 w-5 text-primary" />
+              <h3 className="text-[14px] font-semibold text-foreground">{feature.title}</h3>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{feature.description}</p>
             </div>
           ))}
         </div>

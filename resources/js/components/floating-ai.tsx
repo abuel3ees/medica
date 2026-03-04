@@ -1,7 +1,9 @@
 import { usePage } from "@inertiajs/react"
-import { usePermissions } from "@/hooks/use-permissions"
-import { Bot, Send, X, Minimize2, Maximize2, Sparkles } from "lucide-react"
+import { Bot, Minimize2, Maximize2, Send, Sparkles, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+
+import { usePermissions } from "@/hooks/use-permissions"
+import { addMessage, createSession } from "@/lib/chat-history"
 
 interface Message {
   role: "user" | "assistant"
@@ -22,6 +24,7 @@ export function FloatingAI() {
   const [loading, setLoading] = useState(false)
   const [thinkingPhase, setThinkingPhase] = useState<"thinking" | "typing" | null>(null)
   const [pulse, setPulse] = useState(true)
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -29,23 +32,29 @@ export function FloatingAI() {
   }, [messages, thinkingPhase])
 
   // Disable pulse after first open
-  useEffect(() => {
-    if (open) setPulse(false)
-  }, [open])
+  const handleOpen = () => {
+    setOpen(true)
+    setPulse(false)
+  }
 
   if (!aiEnabled) return null
 
-  const typewriterReveal = (fullText: string) => {
+  const ensureSession = () => {
+    if (sessionId) return sessionId
+    const s = createSession()
+    setSessionId(s.id)
+    return s.id
+  }
+
+  const typewriterReveal = (fullText: string, sid: string) => {
     setThinkingPhase("typing")
-    // Add the message with empty content
     setMessages((prev) => [...prev, { role: "assistant", content: "", isTyping: true }])
 
     let i = 0
-    const chunkSize = 3 // characters per tick for speed
+    const chunkSize = 3
     const interval = setInterval(() => {
       i += chunkSize
       if (i >= fullText.length) {
-        // Done typing
         clearInterval(interval)
         setMessages((prev) => {
           const copy = [...prev]
@@ -54,6 +63,7 @@ export function FloatingAI() {
         })
         setThinkingPhase(null)
         setLoading(false)
+        addMessage(sid, { role: "assistant", content: fullText, timestamp: new Date().toISOString() })
       } else {
         setMessages((prev) => {
           const copy = [...prev]
@@ -72,6 +82,9 @@ export function FloatingAI() {
     setLoading(true)
     setThinkingPhase("thinking")
 
+    const sid = ensureSession()
+    addMessage(sid, { role: "user", content: msg, timestamp: new Date().toISOString() })
+
     try {
       const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content
       const res = await fetch("/ai-coach/ask", {
@@ -88,7 +101,7 @@ export function FloatingAI() {
       if (res.ok) {
         const data = await res.json()
         const reply = data.reply ?? "No response received."
-        typewriterReveal(reply)
+        typewriterReveal(reply, sid)
       } else {
         setThinkingPhase(null)
         setLoading(false)
@@ -117,7 +130,7 @@ export function FloatingAI() {
       {/* Floating button */}
       {!open && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={handleOpen}
           className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-xl transition-all hover:scale-105 hover:shadow-2xl active:scale-95"
         >
           <Bot className="h-6 w-6 text-white" />

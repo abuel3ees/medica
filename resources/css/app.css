@@ -154,6 +154,25 @@
     to { opacity: 1; }
 }
 
+/* Landing page specific — smoother, more intentional */
+@keyframes landing-fade-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landing-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.animate-landing-fade-in {
+    animation: landing-fade-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-landing-float {
+    animation: landing-float 4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+
 @keyframes slide-in-right {
     from { opacity: 0; transform: translateX(20px); }
     to { opacity: 1; transform: translateX(0); }
@@ -181,23 +200,23 @@
 }
 
 .animate-fade-in-up {
-    animation: fade-in-up 0.5s ease-out both;
+    animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-fade-in {
-    animation: fade-in 0.4s ease-out both;
+    animation: fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-slide-in-right {
-    animation: slide-in-right 0.4s ease-out both;
+    animation: slide-in-right 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-slide-in-left {
-    animation: slide-in-left 0.4s ease-out both;
+    animation: slide-in-left 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-score-pop {
-    animation: score-pop 0.4s ease-out both;
+    animation: score-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-float {
@@ -206,7 +225,7 @@
 
 /* Stagger children animations */
 .stagger-children > * {
-    animation: fade-in-up 0.4s ease-out both;
+    animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
 .stagger-children > *:nth-child(2) { animation-delay: 60ms; }

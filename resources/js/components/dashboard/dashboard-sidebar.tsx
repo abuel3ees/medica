@@ -150,6 +150,7 @@ function SidebarContent({ onClose }: SidebarProps) {
           <Link
             href="/help"
             onClick={handleNav}
+            data-tour="help"
             className={cn(
               "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
               url.startsWith("/help")
@@ -168,6 +169,7 @@ function SidebarContent({ onClose }: SidebarProps) {
           <Link
             href="/notifications"
             onClick={handleNav}
+            data-tour="notifications"
             className={cn(
               "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
               url.startsWith("/notifications")
