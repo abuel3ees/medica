@@ -25,7 +25,7 @@ import {
   Zap,
 } from "lucide-react"
 import { useState } from "react"
-import { PRESET_THEMES, applyTheme, applyDarkOverrides, resetTheme, getStoredThemeId } from "@/lib/themes"
+import { PRESET_THEMES, PRESET_FONTS, applyTheme, applyDarkOverrides, resetTheme, applyFont, resetFont, getStoredThemeId, getStoredFontId } from "@/lib/themes"
 import DashboardLayout from "../layout"
 
 interface FeatureFlag {
@@ -75,6 +75,7 @@ export default function AdminDashboard() {
   const [showPassword, setShowPassword] = useState(false)
   const [actionFeedback, setActionFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null)
   const [activeTheme, setActiveTheme] = useState(getStoredThemeId)
+  const [activeFont, setActiveFont] = useState(getStoredFontId)
 
   const showFeedback = (type: "success" | "error", message: string) => {
     setActionFeedback({ type, message })
@@ -892,10 +893,61 @@ export default function AdminDashboard() {
               })}
             </div>
 
+            {/* ── Font selector ── */}
+            <div className="pt-2">
+              <h2 className="text-base font-semibold text-foreground sm:text-lg">App Font</h2>
+              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Choose a font for the entire interface. The preview shows how each font looks.</p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {PRESET_FONTS.map((font) => {
+                const isActive = activeFont === font.id
+                return (
+                  <button
+                    key={font.id}
+                    onClick={() => {
+                      if (font.id === "inter") {
+                        resetFont()
+                      } else {
+                        applyFont(font)
+                      }
+                      setActiveFont(font.id)
+                      showFeedback("success", `Font changed to ${font.name}`)
+                    }}
+                    className={`group relative rounded-xl border p-4 text-left transition-all hover:shadow-md ${
+                      isActive
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                        : "border-border/50 bg-card hover:border-border"
+                    }`}
+                  >
+                    {/* Active badge */}
+                    {isActive && (
+                      <div className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                    )}
+
+                    {/* Font name */}
+                    <h3 className="text-sm font-semibold text-foreground" style={{ fontFamily: `'${font.family}', ${font.fallback}` }}>{font.name}</h3>
+
+                    {/* Sample text */}
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground" style={{ fontFamily: `'${font.family}', ${font.fallback}` }}>
+                      {font.sampleText}
+                    </p>
+
+                    {/* Alphabet preview */}
+                    <p className="mt-2 text-[11px] tracking-wide text-muted-foreground/60" style={{ fontFamily: `'${font.family}', ${font.fallback}` }}>
+                      Aa Bb Cc 0123
+                    </p>
+                  </button>
+                )
+              })}
+            </div>
+
             {/* Info */}
             <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
               <p className="text-xs text-muted-foreground">
-                <strong className="text-foreground">Note:</strong> Theme preference is stored in your browser. Each user can have their own theme. The selected theme persists across sessions.
+                <strong className="text-foreground">Note:</strong> Theme and font preferences are stored in your browser. Each user can have their own look. Changes persist across sessions.
               </p>
             </div>
           </div>

@@ -145,11 +145,72 @@ export const PRESET_THEMES: Theme[] = [
   },
 ]
 
+// ───────────────── Font presets ─────────────────
+
+export interface FontPreset {
+  id: string
+  name: string
+  family: string          // CSS font-family value
+  fallback: string        // fallback stack
+  sampleText: string      // preview sentence
+}
+
+export const PRESET_FONTS: FontPreset[] = [
+  {
+    id: "inter",
+    name: "Inter",
+    family: "Inter",
+    fallback: "ui-sans-serif, system-ui, sans-serif",
+    sampleText: "Clean and modern — the Medica default",
+  },
+  {
+    id: "jakarta",
+    name: "Plus Jakarta Sans",
+    family: "Plus Jakarta Sans",
+    fallback: "ui-sans-serif, system-ui, sans-serif",
+    sampleText: "Friendly geometric with warm curves",
+  },
+  {
+    id: "dm-sans",
+    name: "DM Sans",
+    family: "DM Sans",
+    fallback: "ui-sans-serif, system-ui, sans-serif",
+    sampleText: "Compact and balanced for data-heavy UIs",
+  },
+  {
+    id: "nunito",
+    name: "Nunito",
+    family: "Nunito",
+    fallback: "ui-sans-serif, system-ui, sans-serif",
+    sampleText: "Soft, rounded, easy on the eyes",
+  },
+  {
+    id: "outfit",
+    name: "Outfit",
+    family: "Outfit",
+    fallback: "ui-sans-serif, system-ui, sans-serif",
+    sampleText: "Sleek and contemporary with clean lines",
+  },
+  {
+    id: "space-grotesk",
+    name: "Space Grotesk",
+    family: "Space Grotesk",
+    fallback: "ui-sans-serif, system-ui, sans-serif",
+    sampleText: "Distinctive character with a techy edge",
+  },
+]
+
 const THEME_STORAGE_KEY = "medica-theme"
+const FONT_STORAGE_KEY = "medica-font"
 
 export function getStoredThemeId(): string {
   if (typeof window === "undefined") return "terracotta"
   return localStorage.getItem(THEME_STORAGE_KEY) || "terracotta"
+}
+
+export function getStoredFontId(): string {
+  if (typeof window === "undefined") return "inter"
+  return localStorage.getItem(FONT_STORAGE_KEY) || "inter"
 }
 
 export function applyTheme(theme: Theme) {
@@ -239,4 +300,27 @@ export function resetTheme() {
   if (style) style.remove()
 
   localStorage.setItem(THEME_STORAGE_KEY, "terracotta")
+}
+
+// ───────────────── Font helpers ─────────────────
+
+export function applyFont(font: FontPreset) {
+  const root = document.documentElement
+  root.style.setProperty("--font-sans", `'${font.family}', ${font.fallback}`)
+  localStorage.setItem(FONT_STORAGE_KEY, font.id)
+}
+
+export function resetFont() {
+  const root = document.documentElement
+  root.style.removeProperty("--font-sans")
+  localStorage.setItem(FONT_STORAGE_KEY, "inter")
+}
+
+export function initializeFont() {
+  const fontId = getStoredFontId()
+  if (fontId === "inter") return // default, nothing to override
+  const font = PRESET_FONTS.find((f) => f.id === fontId)
+  if (font) {
+    applyFont(font)
+  }
 }

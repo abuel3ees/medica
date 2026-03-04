@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import '../css/app.css';
 import { SplashScreen } from './components/splash-screen';
 import { initializeTheme } from './hooks/use-appearance';
-import { initializeTheme as initializeColorTheme } from './lib/themes';
+import { initializeTheme as initializeColorTheme, initializeFont } from './lib/themes';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Medica';
 
@@ -65,3 +65,6 @@ initializeTheme();
 
 // Apply saved color theme
 initializeColorTheme();
+
+// Apply saved font
+initializeFont();
