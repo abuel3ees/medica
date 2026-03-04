@@ -1,0 +1,245 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\DoctorProfile;
+use App\Models\Visit;
+use App\Models\VisitObjective;
+use Illuminate\Support\Collection;
+
+class EfficiencyScoreService
+{
+    /**
+     * Calculate and persist the efficiency score for a single visit.
+     *
+     * Formula:
+     *   [(Σ (OutcomeScore × ObjectiveWeight)) / (Σ ObjectiveWeight) + ProgressBonus]
+     *     × DifficultyMultiplier ÷ TimeFactor
+     */
+    public function calculateVisitScore(Visit $visit): float
+    {
+        $visit->loadMissing(['visitObjectives.objective', 'doctorProfile']);
+
+        // 1. Weighted outcome score
+        $rawOutcome = $this->computeWeightedOutcome($visit->visitObjectives);
+
+        // 2. Progress bonus
+        $progressBonus = $this->computeProgressBonus($visit);
+
+        // 3. Difficulty multiplier
+        $difficultyMultiplier = $this->computeDifficultyMultiplier($visit);
+
+        // 4. Time factor
+        $timeFactor = $this->computeTimeFactor($visit->time_spent_minutes);
+
+        // 5. Confidence adjustment (optional – reduce score slightly when unsure)
+        $confidenceAdjustment = $this->computeConfidenceAdjustment($visit->confidence);
+
+        // Final score
+        $score = (($rawOutcome + $progressBonus) * $difficultyMultiplier / $timeFactor) * $confidenceAdjustment;
+
+        // Clamp to 0…2.0 reasonable range (normalized)
+        $score = max(0, round($score, 3));
+
+        // Persist cached scores
+        $visit->update([
+            'raw_outcome_score'    => round($rawOutcome, 3),
+            'progress_bonus'       => round($progressBonus, 3),
+            'difficulty_multiplier' => round($difficultyMultiplier, 2),
+            'time_factor'          => round($timeFactor, 3),
+            'efficiency_score'     => $score,
+        ]);
+
+        return $score;
+    }
+
+    /**
+     * Weighted average: Σ(outcomeScore × objectiveWeight) / Σ(objectiveWeight)
+     */
+    protected function computeWeightedOutcome(Collection $visitObjectives): float
+    {
+        if ($visitObjectives->isEmpty()) {
+            return 0;
+        }
+
+        $totalWeightedScore = 0;
+        $totalWeight = 0;
+
+        foreach ($visitObjectives as $vo) {
+            $weight = $vo->objective?->weight ?? 1.0;
+            $totalWeightedScore += $vo->outcome_score * $weight;
+            $totalWeight += $weight;
+        }
+
+        return $totalWeight > 0 ? $totalWeightedScore / $totalWeight : 0;
+    }
+
+    /**
+     * Progress bonus for stance changes and follow-through.
+     */
+    protected function computeProgressBonus(Visit $visit): float
+    {
+        $bonus = 0;
+
+        // Stance progression
+        if ($visit->stance_before && $visit->stance_after) {
+            $stanceOrder = ['resistant' => 0, 'neutral' => 1, 'supportive' => 2];
+            $before = $stanceOrder[$visit->stance_before] ?? 0;
+            $after = $stanceOrder[$visit->stance_after] ?? 0;
+
+            if ($before === 0 && $after === 1) {
+                $bonus += 0.10; // Resistant → Neutral
+            } elseif ($before === 1 && $after === 2) {
+                $bonus += 0.15; // Neutral → Supportive
+            } elseif ($before === 0 && $after === 2) {
+                $bonus += 0.25; // Resistant → Supportive (big jump)
+            }
+        }
+
+        // Booked concrete next step
+        if ($visit->nextSteps()->exists()) {
+            $bonus += 0.10;
+        }
+
+        // Closed a loop from a previous visit (check if any prior next_step was completed recently)
+        $closedLoopCount = $visit->doctorProfile
+            ?->visits()
+            ->where('visits.id', '<', $visit->id)
+            ->whereHas('nextSteps', function ($q) use ($visit) {
+                $q->where('is_completed', true)
+                    ->where('completed_at', '>=', $visit->visit_date->subDays(14));
+            })
+            ->count() ?? 0;
+
+        if ($closedLoopCount > 0) {
+            $bonus += 0.10;
+        }
+
+        return $bonus;
+    }
+
+    /**
+     * Difficulty multiplier: easy 0.9, moderate 1.0, hard 1.15
+     */
+    protected function computeDifficultyMultiplier(Visit $visit): float
+    {
+        $difficulty = $visit->access_difficulty
+            ?? $visit->doctorProfile?->access_difficulty
+            ?? 'moderate';
+
+        return DoctorProfile::difficultyMultiplierFor($difficulty);
+    }
+
+    /**
+     * Time factor: sqrt(minutes / 15)  — prevents very long visits from inflating score.
+     * Minimum factor of 1.0 (visits ≤ 15 min aren't penalized extra).
+     */
+    protected function computeTimeFactor(?int $minutes): float
+    {
+        if (! $minutes || $minutes <= 0) {
+            return 1.0;
+        }
+
+        return max(1.0, sqrt($minutes / 15));
+    }
+
+    /**
+     * Confidence adjustment: if confidence is provided (0-100),
+     * reduce score slightly when uncertain.
+     * Full confidence (100) → 1.0, low (0) → 0.85
+     */
+    protected function computeConfidenceAdjustment(?int $confidence): float
+    {
+        if ($confidence === null) {
+            return 1.0;
+        }
+
+        // Linear scale: 0.85 at 0 confidence, 1.0 at 100 confidence
+        return 0.85 + (0.15 * ($confidence / 100));
+    }
+
+    // -----------------------------------------------------------
+    // Aggregations
+    // -----------------------------------------------------------
+
+    /**
+     * Doctor efficiency: recency-weighted average of last N visits.
+     */
+    public function doctorEfficiency(int $doctorProfileId, int $lastN = 10): float
+    {
+        $visits = Visit::forDoctor($doctorProfileId)
+            ->whereNotNull('efficiency_score')
+            ->orderByDesc('visit_date')
+            ->limit($lastN)
+            ->get();
+
+        if ($visits->isEmpty()) {
+            return 0;
+        }
+
+        // Recency weighting: most recent gets weight N, oldest gets 1
+        $totalWeight = 0;
+        $totalScore = 0;
+        $count = $visits->count();
+
+        foreach ($visits->values() as $i => $visit) {
+            $weight = $count - $i; // e.g. 10, 9, 8…
+            $totalWeight += $weight;
+            $totalScore += $visit->efficiency_score * $weight;
+        }
+
+        return $totalWeight > 0 ? round($totalScore / $totalWeight, 3) : 0;
+    }
+
+    /**
+     * Rep efficiency: weighted by doctor tier/priority.
+     */
+    public function repEfficiency(int $repId, int $days = 30): float
+    {
+        $visits = Visit::forRep($repId)
+            ->with('doctorProfile')
+            ->whereNotNull('efficiency_score')
+            ->recent($days)
+            ->get();
+
+        if ($visits->isEmpty()) {
+            return 0;
+        }
+
+        $tierWeights = ['A' => 1.5, 'B' => 1.0, 'C' => 0.7];
+        $totalWeight = 0;
+        $totalScore = 0;
+
+        foreach ($visits as $visit) {
+            $segment = $visit->doctorProfile?->segment ?? 'B';
+            $weight = $tierWeights[$segment] ?? 1.0;
+            $totalWeight += $weight;
+            $totalScore += $visit->efficiency_score * $weight;
+        }
+
+        return $totalWeight > 0 ? round($totalScore / $totalWeight, 3) : 0;
+    }
+
+    /**
+     * Territory efficiency: roll-up of all reps.
+     */
+    public function territoryEfficiency(array $repIds, int $days = 30): float
+    {
+        if (empty($repIds)) {
+            return 0;
+        }
+
+        $totalScore = 0;
+        $count = 0;
+
+        foreach ($repIds as $repId) {
+            $score = $this->repEfficiency($repId, $days);
+            if ($score > 0) {
+                $totalScore += $score;
+                $count++;
+            }
+        }
+
+        return $count > 0 ? round($totalScore / $count, 3) : 0;
+    }
+}
