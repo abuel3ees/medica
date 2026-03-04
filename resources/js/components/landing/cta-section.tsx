@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react"
 
 const STEPS = [
   { num: "01", title: "Log the visit", desc: "Pick the doctor, check your objectives, add a quick note. Done in under a minute." },
-  { num: "02", title: "See your score", desc: "Medica calculates an efficiency score based on what you planned vs. what happened." },
+  { num: "02", title: "See your score", desc: "Your efficiency score is calculated based on what you planned vs. what happened." },
   { num: "03", title: "Get smarter", desc: "The AI coach reviews your patterns and tells you specifically what to do differently." },
 ]
 

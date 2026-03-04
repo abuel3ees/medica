@@ -32,7 +32,7 @@ interface TutorialStep {
 const STEPS: TutorialStep[] = [
   {
     id: "welcome",
-    title: "Welcome to Medica! 👋",
+    title: "Welcome! 👋",
     description: "This tour will walk you through everything — your dashboard, logging visits, managing doctors, using the AI coach, and more. Takes about 2 minutes.",
     tip: "You can skip or resume anytime. Your progress is saved.",
     icon: Sparkles,
@@ -129,7 +129,7 @@ const STEPS: TutorialStep[] = [
   {
     id: "command_palette",
     title: "Command Palette",
-    description: "Press ⌘K (or Ctrl+K) anywhere to open the command palette. Search for pages, actions, doctors, or settings. It's the fastest way to navigate Medica.",
+    description: "Press ⌘K (or Ctrl+K) anywhere to open the command palette. Search for pages, actions, doctors, or settings. It's the fastest way to navigate the app.",
     tip: "Tip: Try searching 'log visit' or a doctor's name. You can also click the search bar in the top header.",
     icon: Command,
     navigateTo: "/dashboard",
@@ -146,7 +146,7 @@ const STEPS: TutorialStep[] = [
   {
     id: "finish",
     title: "You're all set! 🎉",
-    description: "That's everything. Start by logging your first visit — the more data you add, the smarter Medica gets. Your AI coach will have personalized insights within a few visits.",
+    description: "That's everything. Start by logging your first visit — the more data you add, the smarter the system gets. Your AI coach will have personalized insights within a few visits.",
     tip: "If you ever want to replay this tour, ask your admin to reset it from the Dev Console.",
     icon: Sparkles,
     position: "center",

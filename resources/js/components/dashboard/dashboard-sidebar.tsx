@@ -36,6 +36,7 @@ function SidebarContent({ onClose }: SidebarProps) {
   const page = usePage()
   const { url } = page
   const user = page.props.auth.user
+  const companyName = (page.props.companyName as string) || "Medica"
   const { can, hasRole } = usePermissions()
   const unreadCount = page.props.unreadNotifications ?? 0
 
@@ -65,7 +66,7 @@ function SidebarContent({ onClose }: SidebarProps) {
             <div className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-accent animate-pulse" />
           </div>
           <div>
-            <span className="text-sm font-bold tracking-tight text-foreground">Medica</span>
+            <span className="text-sm font-bold tracking-tight text-foreground">{companyName}</span>
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
               {roleLabel} Console
             </p>

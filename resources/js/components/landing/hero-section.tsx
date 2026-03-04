@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button"
-import { Link } from "@inertiajs/react"
+import { Link, usePage } from "@inertiajs/react"
 import { ArrowRight } from "lucide-react"
 
 export function HeroSection() {
+  const companyName = (usePage().props.companyName as string) || "Medica"
+
   return (
     <section className="relative overflow-hidden pb-20 pt-12 md:pb-32 md:pt-20">
       <div className="mx-auto max-w-6xl px-6">
@@ -21,7 +23,7 @@ export function HeroSection() {
             </h1>
 
             <p className="mt-5 max-w-md text-[15px] leading-[1.7] text-muted-foreground animate-landing-fade-in [animation-delay:200ms]">
-              Medica gives medical reps one place to log doctor visits, track objectives, and see exactly how they're performing — with scores that actually mean something.
+              {companyName} gives medical reps one place to log doctor visits, track objectives, and see exactly how they're performing — with scores that actually mean something.
             </p>
 
             <div className="mt-8 flex items-center gap-3 animate-landing-fade-in [animation-delay:300ms]">

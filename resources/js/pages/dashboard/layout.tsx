@@ -16,6 +16,7 @@ export default function DashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false)
   const [cmdOpen, setCmdOpen] = useState(false)
   const unreadCount = usePage().props.unreadNotifications ?? 0
+  const companyName = (usePage().props.companyName as string) || "Medica"
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -38,7 +39,7 @@ export default function DashboardLayout({
             <div className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-primary shadow-sm">
               <Activity className="h-3.5 w-3.5 text-white" />
             </div>
-            <span className="text-sm font-bold tracking-tight text-foreground">Medica</span>
+            <span className="text-sm font-bold tracking-tight text-foreground">{companyName}</span>
           </div>
 
           {/* Command palette trigger bar */}

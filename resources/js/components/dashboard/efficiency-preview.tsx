@@ -21,7 +21,7 @@ function computePreviewScore(data: VisitFormData, objectives: Objective[]): numb
 
   // Difficulty multiplier
   const diffMult =
-    data.access_difficulty === "easy" ? 0.9 : data.access_difficulty === "hard" ? 1.15 : 1.0
+    data.access_difficulty === "C" ? 0.9 : data.access_difficulty === "A" ? 1.15 : 1.0
 
   // Time factor
   const minutes = data.time_spent_minutes ?? 15
@@ -68,7 +68,7 @@ export function EfficiencyPreview({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Access Difficulty</span>
-                  <span className="text-foreground capitalize">{formData.access_difficulty ?? "moderate"}</span>
+                  <span className="text-foreground">{formData.access_difficulty ?? "B"}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Time Spent</span>

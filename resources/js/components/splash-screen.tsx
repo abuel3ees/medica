@@ -1,9 +1,15 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
-const LETTERS = ["e", "d", "i", "c", "a"]
-
-export function SplashScreen({ onComplete }: { onComplete: () => void }) {
+export function SplashScreen({ onComplete, companyName = "Medica" }: { onComplete: () => void; companyName?: string }) {
   const [phase, setPhase] = useState<"m-in" | "hold" | "slide" | "tagline" | "fade">("m-in")
+
+  const { firstLetter, remainingLetters } = useMemo(() => {
+    const name = companyName || "Medica"
+    return {
+      firstLetter: name.charAt(0),
+      remainingLetters: name.slice(1).split(""),
+    }
+  }, [companyName])
 
   useEffect(() => {
     // Phase 1: M fades in at its final position (already left-aligned where "Medica" will be)
@@ -55,7 +61,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
             transition: "opacity 0.6s ease-out",
           }}
         >
-          M
+          {firstLetter}
         </span>
 
         {/* Remaining letters — all slide out together at once */}
@@ -66,7 +72,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
             transition: "max-width 1.4s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
-          {LETTERS.map((letter, i) => (
+          {remainingLetters.map((letter, i) => (
             <span
               key={i}
               className="inline-block shrink-0"

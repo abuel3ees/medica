@@ -22,7 +22,7 @@ type DoctorEditData = {
   location: string | null
   segment: "A" | "B" | "C"
   stance: "supportive" | "neutral" | "resistant"
-  access_difficulty: "easy" | "moderate" | "hard"
+  access_difficulty: "A" | "B" | "C"
   license_number: string | null
   years_of_experience: number | null
   bio: string | null
@@ -156,14 +156,14 @@ export default function DoctorEditPage() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label className="text-sm">Access Difficulty</Label>
-                  <Select value={data.access_difficulty} onValueChange={(v) => setData("access_difficulty", v as "easy" | "moderate" | "hard")}>
+                  <Select value={data.access_difficulty} onValueChange={(v) => setData("access_difficulty", v as "A" | "B" | "C")}>
                     <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="easy">Easy</SelectItem>
-                      <SelectItem value="moderate">Moderate</SelectItem>
-                      <SelectItem value="hard">Hard</SelectItem>
+                      <SelectItem value="A">A — Hard Access</SelectItem>
+                      <SelectItem value="B">B — Moderate</SelectItem>
+                      <SelectItem value="C">C — Easy Access</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

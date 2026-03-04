@@ -119,13 +119,13 @@ class EfficiencyScoreService
     }
 
     /**
-     * Difficulty multiplier: easy 0.9, moderate 1.0, hard 1.15
+     * Difficulty multiplier: C 0.9, B 1.0, A 1.15
      */
     protected function computeDifficultyMultiplier(Visit $visit): float
     {
         $difficulty = $visit->access_difficulty
             ?? $visit->doctorProfile?->access_difficulty
-            ?? 'moderate';
+            ?? 'B';
 
         return DoctorProfile::difficultyMultiplierFor($difficulty);
     }

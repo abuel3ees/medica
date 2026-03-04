@@ -8,6 +8,7 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false)
   const { props } = usePage<{ auth?: { user?: { id: number } } }>()
   const isLoggedIn = !!(props as { auth?: { user?: { id: number } } })?.auth?.user
+  const companyName = (props as Record<string, unknown>).companyName as string || "Medica"
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -22,7 +23,7 @@ export function SiteHeader() {
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
             <Activity className="h-3.5 w-3.5 text-white" />
           </div>
-          <span className="text-sm font-bold text-foreground">Medica</span>
+          <span className="text-sm font-bold text-foreground">{companyName}</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

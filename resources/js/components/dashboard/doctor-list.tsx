@@ -9,8 +9,8 @@ import { Search, TrendingDown, TrendingUp, Minus } from "lucide-react"
 import { useState } from "react"
 
 function getDifficultyColor(d: string) {
-  if (d === "hard") return "text-destructive"
-  if (d === "moderate") return "text-primary"
+  if (d === "A") return "text-destructive"
+  if (d === "B") return "text-primary"
   return "text-accent"
 }
 

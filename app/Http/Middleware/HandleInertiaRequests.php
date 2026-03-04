@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\AppSetting;
 use App\Models\FeatureFlag;
 use App\Models\Notification;
 use Illuminate\Http\Request;
@@ -62,9 +63,17 @@ class HandleInertiaRequests extends Middleware
             }
         }
 
+        $companyName = 'Medica';
+        try {
+            $companyName = AppSetting::companyName();
+        } catch (\Exception $e) {
+            // Table may not exist yet during migrations
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'companyName' => $companyName,
             'auth' => [
                 'user' => $request->user(),
             ],

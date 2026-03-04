@@ -37,7 +37,7 @@ export type DoctorSummary = {
   location: string | null
   segment: 'A' | 'B' | 'C'
   stance: 'supportive' | 'neutral' | 'resistant'
-  access_difficulty: 'easy' | 'moderate' | 'hard'
+  access_difficulty: 'A' | 'B' | 'C'
   visits_count?: number
   trend?: string
 }
@@ -211,7 +211,7 @@ export type VisitFormData = {
   visit_date: string
   objectives: VisitObjectiveInput[]
   engagement_quality: 'low' | 'medium' | 'high' | null
-  access_difficulty: 'easy' | 'moderate' | 'hard' | null
+  access_difficulty: 'A' | 'B' | 'C' | null
   time_spent_minutes: number | null
   confidence: number | null
   stance_before: 'supportive' | 'neutral' | 'resistant' | null

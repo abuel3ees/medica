@@ -25,7 +25,7 @@ class StoreVisitRequest extends FormRequest
 
             // Optional signals
             'engagement_quality'  => ['nullable', 'in:low,medium,high'],
-            'access_difficulty'   => ['nullable', 'in:easy,moderate,hard'],
+            'access_difficulty'   => ['nullable', 'in:A,B,C'],
             'time_spent_minutes'  => ['nullable', 'integer', 'min:1', 'max:480'],
             'confidence'          => ['nullable', 'integer', 'min:0', 'max:100'],
 

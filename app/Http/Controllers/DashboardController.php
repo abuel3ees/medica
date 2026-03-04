@@ -336,24 +336,24 @@ class DashboardController extends Controller
             }
         }
 
-        // Check if easy accounts dominate good scores
-        $easyHighScore = Visit::recent($days)
+        // Check if C-tier accounts dominate good scores
+        $cTierScore = Visit::recent($days)
             ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
-            ->where('access_difficulty', 'easy')
+            ->where('access_difficulty', 'C')
             ->whereNotNull('efficiency_score')
             ->avg('efficiency_score') ?? 0;
 
-        $hardHighScore = Visit::recent($days)
+        $aTierScore = Visit::recent($days)
             ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
-            ->where('access_difficulty', 'hard')
+            ->where('access_difficulty', 'A')
             ->whereNotNull('efficiency_score')
             ->avg('efficiency_score') ?? 0;
 
-        if ($easyHighScore > 0 && $hardHighScore > 0 && $easyHighScore > $hardHighScore * 1.5) {
+        if ($cTierScore > 0 && $aTierScore > 0 && $cTierScore > $aTierScore * 1.5) {
             $insights[] = [
                 'type'    => 'info',
-                'title'   => 'Easy account dominance',
-                'message' => 'Strong performance on easy accounts (' . round($easyHighScore * 100, 1) . ') but hard accounts lag (' . round($hardHighScore * 100, 1) . '). Build strategies for difficult accounts.',
+                'title'   => 'C-tier account dominance',
+                'message' => 'Strong performance on C-tier accounts (' . round($cTierScore * 100, 1) . ') but A-tier accounts lag (' . round($aTierScore * 100, 1) . '). Build strategies for high-difficulty accounts.',
             ];
         }
 

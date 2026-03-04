@@ -463,11 +463,11 @@ export function VisitForm({
               <div className="flex flex-col gap-2">
                 <Label className="text-xs text-muted-foreground">Access Difficulty</Label>
                 <div className="flex gap-2">
-                  {(["easy", "moderate", "hard"] as const).map((level) => (
+                  {(["A", "B", "C"] as const).map((level) => (
                     <button
                       key={level}
                       type="button"
-                      className={`flex-1 rounded-md border px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
+                      className={`flex-1 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
                         data.access_difficulty === level
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border text-muted-foreground hover:bg-secondary/50"

@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,7 @@ export default function Login({
 }: Props) {
     const [showPassword, setShowPassword] = useState(false);
     const [copied, setCopied] = useState<string | null>(null);
+    const companyName = (usePage().props.companyName as string) || 'Medica';
 
     const autofill = useCallback((email: string) => {
         const emailInput = document.getElementById('email') as HTMLInputElement;
@@ -78,7 +79,7 @@ export default function Login({
                                 <Activity className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <span className="text-lg font-bold tracking-tight">Medica</span>
+                                <span className="text-lg font-bold tracking-tight">{companyName}</span>
                                 <p className="text-[10px] font-medium uppercase tracking-widest text-white/60">Visit Intelligence</p>
                             </div>
                         </Link>
@@ -98,7 +99,7 @@ export default function Login({
                             <span className="text-white/70">Score every interaction.</span>
                         </h2>
                         <p className="max-w-sm text-sm leading-relaxed text-white/60">
-                            Medica scores reps by outcome, difficulty, and time.
+                            {companyName} scores reps by outcome, difficulty, and time.
                             Our AI coach turns data into actionable strategies.
                         </p>
 
@@ -171,7 +172,7 @@ export default function Login({
                                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-md">
                                     <Activity className="h-4 w-4 text-white" />
                                 </div>
-                                <span className="text-sm font-bold tracking-tight text-foreground">Medica</span>
+                                <span className="text-sm font-bold tracking-tight text-foreground">{companyName}</span>
                             </Link>
                         </div>
 

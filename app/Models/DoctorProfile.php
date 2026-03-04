@@ -73,10 +73,10 @@ class DoctorProfile extends Model
     public static function difficultyMultiplierFor(string $difficulty): float
     {
         return match ($difficulty) {
-            'easy'     => 0.90,
-            'moderate' => 1.00,
-            'hard'     => 1.15,
-            default    => 1.00,
+            'C'     => 0.90,
+            'B'     => 1.00,
+            'A'     => 1.15,
+            default => 1.00,
         };
     }
 

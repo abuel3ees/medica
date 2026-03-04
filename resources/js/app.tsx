@@ -9,7 +9,7 @@ import { initializeTheme as initializeColorTheme, initializeFont } from './lib/t
 
 const appName = import.meta.env.VITE_APP_NAME || 'Medica';
 
-function AppWithSplash({ children, splashEnabled }: { children: React.ReactNode; splashEnabled: boolean }) {
+function AppWithSplash({ children, splashEnabled, companyName }: { children: React.ReactNode; splashEnabled: boolean; companyName: string }) {
     const [showSplash, setShowSplash] = useState(() => {
         if (!splashEnabled) return false;
         // Only show splash once per session (open a new tab or clear sessionStorage to replay)
@@ -24,7 +24,7 @@ function AppWithSplash({ children, splashEnabled }: { children: React.ReactNode;
 
     return (
         <>
-            {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+            {showSplash && <SplashScreen onComplete={handleSplashComplete} companyName={companyName} />}
             <div style={{ visibility: showSplash ? 'hidden' : 'visible' }}>
                 {children}
             </div>
@@ -46,10 +46,11 @@ createInertiaApp({
         const pageProps = props.initialPage.props as Record<string, unknown>;
         const featureFlags = pageProps.featureFlags as Record<string, boolean> | undefined;
         const splashEnabled = featureFlags?.splash_animation !== false;
+        const companyName = (pageProps.companyName as string) || 'Medica';
 
         root.render(
             <StrictMode>
-                <AppWithSplash splashEnabled={splashEnabled}>
+                <AppWithSplash splashEnabled={splashEnabled} companyName={companyName}>
                     <App {...props} />
                 </AppWithSplash>
             </StrictMode>,

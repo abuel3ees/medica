@@ -22,7 +22,7 @@ export default function DoctorCreatePage() {
     location: "",
     segment: "B" as "A" | "B" | "C",
     stance: "neutral" as "supportive" | "neutral" | "resistant",
-    access_difficulty: "moderate" as "easy" | "moderate" | "hard",
+    access_difficulty: "B" as "A" | "B" | "C",
     license_number: "",
     years_of_experience: "" as string | number,
     bio: "",
@@ -143,14 +143,14 @@ export default function DoctorCreatePage() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label className="text-sm">Access Difficulty</Label>
-                  <Select value={data.access_difficulty} onValueChange={(v) => setData("access_difficulty", v as "easy" | "moderate" | "hard")}>
+                  <Select value={data.access_difficulty} onValueChange={(v) => setData("access_difficulty", v as "A" | "B" | "C")}>
                     <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="easy">Easy</SelectItem>
-                      <SelectItem value="moderate">Moderate</SelectItem>
-                      <SelectItem value="hard">Hard</SelectItem>
+                      <SelectItem value="A">A — Hard Access</SelectItem>
+                      <SelectItem value="B">B — Moderate</SelectItem>
+                      <SelectItem value="C">C — Easy Access</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -63,7 +63,7 @@ export function DoctorDetail({ doctor }: { doctor: DoctorDetailType }) {
               <span className="text-[10px] text-muted-foreground">Total visits</span>
             </div>
             <div className="flex flex-col items-center rounded-lg border border-border bg-secondary/50 px-4 py-2">
-              <span className={`font-mono text-lg font-bold capitalize ${doctor.access_difficulty === "hard" ? "text-destructive" : doctor.access_difficulty === "moderate" ? "text-primary" : "text-accent"}`}>
+              <span className={`font-mono text-lg font-bold ${doctor.access_difficulty === "A" ? "text-destructive" : doctor.access_difficulty === "B" ? "text-primary" : "text-accent"}`}>
                 {doctor.access_difficulty}
               </span>
               <span className="text-[10px] text-muted-foreground">Access</span>
