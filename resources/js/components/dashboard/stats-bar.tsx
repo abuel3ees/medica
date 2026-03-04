@@ -1,29 +1,39 @@
 "use client"
 
+import { Clock, Target, TrendingDown, TrendingUp, Users, Zap } from "lucide-react"
+
 import { HelpTip } from "@/components/help-tip"
 import { Card, CardContent } from "@/components/ui/card"
 import type { StatItem } from "@/types"
-import { Clock, Target, TrendingDown, TrendingUp, Users, Zap } from "lucide-react"
 
 const ICON_MAP: Record<string, typeof Target> = {
   "Total Visits": Target,
+  "My Visits": Target,
   "Active Reps": Users,
   "Avg Efficiency": Zap,
+  "My Efficiency": Zap,
   "Avg Visit Time": Clock,
+  "Doctors Seen": Users,
 }
 
 const COLOR_MAP: Record<string, string> = {
   "Total Visits": "bg-primary/10",
+  "My Visits": "bg-primary/10",
   "Active Reps": "bg-accent/10",
   "Avg Efficiency": "bg-accent/10",
+  "My Efficiency": "bg-accent/10",
   "Avg Visit Time": "bg-primary/10",
+  "Doctors Seen": "bg-accent/10",
 }
 
 const HELP_MAP: Record<string, string> = {
   "Total Visits": "Number of doctor visits logged in the current period. Trend shows change vs. the prior period.",
+  "My Visits": "Your total visits logged in the current period. Trend shows change vs. the prior period.",
   "Active Reps": "Reps who have logged at least one visit in the last 30 days.",
   "Avg Efficiency": "Mean efficiency score (weighted outcome × difficulty ÷ time). Higher is better. 85+ is excellent.",
+  "My Efficiency": "Your efficiency score (weighted outcome × difficulty ÷ time). Higher is better. 85+ is excellent.",
   "Avg Visit Time": "Average visit duration in minutes. Visits ≤15 min get the best time factor (1.0×).",
+  "Doctors Seen": "Unique doctors visited in the current period.",
 }
 
 export function StatsBar({ stats }: { stats: StatItem[] }) {

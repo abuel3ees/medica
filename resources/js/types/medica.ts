@@ -156,6 +156,28 @@ export type CoachingInsight = {
   message: string
 }
 
+export type OutcomeSlice = {
+  name: string
+  value: number
+  color: string
+}
+
+export type DailyVisitBar = {
+  date: string
+  day: string
+  visits: number
+}
+
+export type GoalProgress = {
+  weeklyVisits: number
+  weeklyTarget: number
+  avgScore: number
+  uniqueDoctors: number
+  doctorTarget: number
+  positiveOutcomes: number
+  positiveTarget: number
+}
+
 // Page props
 export type DashboardPageProps = {
   stats: StatItem[]
@@ -166,6 +188,9 @@ export type DashboardPageProps = {
   heatmapData: HeatmapDay[]
   topDoctors: TopDoctor[]
   coachingInsights: CoachingInsight[]
+  outcomeDistribution: OutcomeSlice[]
+  dailyVisits: DailyVisitBar[]
+  goalProgress: GoalProgress
 }
 
 export type VisitCreatePageProps = {

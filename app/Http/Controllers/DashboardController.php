@@ -29,14 +29,17 @@ class DashboardController extends Controller
         $isManager = $user->hasPermissionTo('view team dashboard');
 
         return Inertia::render('dashboard/dashboard', [
-            'stats'            => $this->getStats($days, $user, $isManager),
-            'repScores'        => $isManager ? $this->getRepScores($days) : [],
-            'recentVisits'     => $this->getRecentVisits(8, $user, $isManager),
-            'efficiencyTrend'  => $this->getEfficiencyTrend($user, $isManager),
-            'visitTrend'       => $this->getVisitTrend($user, $isManager),
-            'heatmapData'      => $this->getHeatmapData($user, $isManager),
-            'topDoctors'       => $this->getTopDoctors(5, $user, $isManager),
-            'coachingInsights' => $this->getCoachingInsights($days, $user, $isManager),
+            'stats'                => $this->getStats($days, $user, $isManager),
+            'repScores'            => $isManager ? $this->getRepScores($days) : [],
+            'recentVisits'         => $this->getRecentVisits(8, $user, $isManager),
+            'efficiencyTrend'      => $this->getEfficiencyTrend($user, $isManager),
+            'visitTrend'           => $this->getVisitTrend($user, $isManager),
+            'heatmapData'          => $this->getHeatmapData($user, $isManager),
+            'topDoctors'           => $this->getTopDoctors(5, $user, $isManager),
+            'coachingInsights'     => $this->getCoachingInsights($days, $user, $isManager),
+            'outcomeDistribution'  => $this->getOutcomeDistribution($days, $user, $isManager),
+            'dailyVisits'          => $this->getDailyVisits($user, $isManager),
+            'goalProgress'         => $this->getGoalProgress($days, $user, $isManager),
         ]);
     }
 
@@ -380,6 +383,101 @@ class DashboardController extends Controller
         }
 
         return $insights;
+    }
+
+    /**
+     * Outcome distribution for pie/donut chart.
+     */
+    private function getOutcomeDistribution(int $days, $user, bool $isManager): array
+    {
+        $visits = Visit::recent($days)
+            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->with('visitObjectives')
+            ->get();
+
+        $positive = 0;
+        $negative = 0;
+        $neutral = 0;
+
+        foreach ($visits as $visit) {
+            $outcome = $this->overallOutcome($visit);
+            if ($outcome === 'Positive') $positive++;
+            elseif ($outcome === 'Negative') $negative++;
+            else $neutral++;
+        }
+
+        return [
+            ['name' => 'Positive', 'value' => $positive, 'color' => '#10b981'],
+            ['name' => 'Neutral', 'value' => $neutral, 'color' => '#f59e0b'],
+            ['name' => 'Negative', 'value' => $negative, 'color' => '#ef4444'],
+        ];
+    }
+
+    /**
+     * Daily visit counts for the last 14 days (bar chart).
+     */
+    private function getDailyVisits($user, bool $isManager): array
+    {
+        $data = [];
+
+        for ($i = 13; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $count = Visit::whereDate('visit_date', $date->toDateString())
+                ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+                ->count();
+
+            $data[] = [
+                'date'   => $date->format('M d'),
+                'day'    => $date->format('D'),
+                'visits' => $count,
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Goal progress metrics (weekly targets).
+     */
+    private function getGoalProgress(int $days, $user, bool $isManager): array
+    {
+        $weekStart = now()->startOfWeek();
+        $weekEnd = now()->endOfWeek();
+
+        $weeklyVisits = Visit::whereBetween('visit_date', [$weekStart, $weekEnd])
+            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->count();
+
+        $weeklyTarget = $isManager ? 50 : 15; // Target visits per week
+
+        $avgScore = Visit::whereBetween('visit_date', [$weekStart, $weekEnd])
+            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->whereNotNull('efficiency_score')
+            ->avg('efficiency_score') ?? 0;
+
+        $uniqueDoctors = Visit::whereBetween('visit_date', [$weekStart, $weekEnd])
+            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->distinct('doctor_profile_id')
+            ->count('doctor_profile_id');
+
+        $doctorTarget = $isManager ? 20 : 8;
+
+        $positiveOutcomes = Visit::whereBetween('visit_date', [$weekStart, $weekEnd])
+            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->whereHas('visitObjectives', fn ($q) => $q->where('outcome', 'met'))
+            ->count();
+
+        $positiveTarget = $isManager ? 30 : 10;
+
+        return [
+            'weeklyVisits'    => $weeklyVisits,
+            'weeklyTarget'    => $weeklyTarget,
+            'avgScore'        => round($avgScore * 100, 1),
+            'uniqueDoctors'   => $uniqueDoctors,
+            'doctorTarget'    => $doctorTarget,
+            'positiveOutcomes' => $positiveOutcomes,
+            'positiveTarget'  => $positiveTarget,
+        ];
     }
 
     /**
