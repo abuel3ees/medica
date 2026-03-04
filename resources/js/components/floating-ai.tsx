@@ -79,6 +79,7 @@ export function FloatingAI() {
         headers: {
           "Content-Type": "application/json",
           "X-CSRF-TOKEN": token ?? "",
+          "X-Requested-With": "XMLHttpRequest",
           Accept: "application/json",
         },
         body: JSON.stringify({ message: msg }),
