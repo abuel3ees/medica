@@ -106,7 +106,6 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           transition: "opacity 0.6s ease-out, transform 0.6s ease-out",
         }}
       >
-        Visit Intelligence
       </p>
 
       {/* Bottom accent line */}
