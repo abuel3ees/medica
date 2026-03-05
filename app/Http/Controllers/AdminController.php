@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Models\AppSetting;
 use App\Models\DoctorProfile;
 use App\Models\FeatureFlag;
 use App\Models\Medication;
@@ -81,6 +82,8 @@ class AdminController extends Controller
             'featureFlags' => $featureFlags,
             'recentActivity' => $recentActivity,
             'users' => $users,
+            'companyName' => AppSetting::companyName(),
+            'systemInfo' => $this->getSystemInfo(),
         ]);
     }
 
@@ -370,5 +373,108 @@ class AdminController extends Controller
         }
 
         return $stats;
+    }
+
+    /**
+     * Get system/environment info.
+     */
+    private function getSystemInfo(): array
+    {
+        return [
+            'php_version' => PHP_VERSION,
+            'laravel_version' => app()->version(),
+            'environment' => app()->environment(),
+            'debug_mode' => config('app.debug'),
+            'timezone' => config('app.timezone'),
+            'db_driver' => DB::connection()->getDriverName(),
+            'cache_driver' => config('cache.default'),
+            'session_driver' => config('session.driver'),
+            'server_os' => PHP_OS,
+            'memory_usage' => round(memory_get_usage(true) / 1048576, 1) . ' MB',
+            'disk_free' => round(disk_free_space(base_path()) / (1024 * 1024 * 1024), 1) . ' GB',
+        ];
+    }
+
+    /**
+     * Update the company name (branding).
+     */
+    public function updateCompanyName(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'company_name' => ['required', 'string', 'max:60'],
+        ]);
+
+        $old = AppSetting::companyName();
+        AppSetting::setValue('company_name', $validated['company_name']);
+
+        ActivityLog::log('company_name_updated', null, [
+            'old' => $old,
+            'new' => $validated['company_name'],
+            'updated_by' => $request->user()->id,
+        ]);
+
+        return response()->json(['success' => true, 'company_name' => $validated['company_name']]);
+    }
+
+    /**
+     * Clear application caches.
+     */
+    public function clearCache(Request $request): JsonResponse
+    {
+        $types = $request->input('types', ['app']);
+        $cleared = [];
+
+        foreach ($types as $type) {
+            match ($type) {
+                'app' => (function () use (&$cleared) {
+                    \Illuminate\Support\Facades\Cache::flush();
+                    $cleared[] = 'Application cache';
+                })(),
+                'views' => (function () use (&$cleared) {
+                    \Illuminate\Support\Facades\Artisan::call('view:clear');
+                    $cleared[] = 'View cache';
+                })(),
+                'routes' => (function () use (&$cleared) {
+                    \Illuminate\Support\Facades\Artisan::call('route:clear');
+                    $cleared[] = 'Route cache';
+                })(),
+                'config' => (function () use (&$cleared) {
+                    \Illuminate\Support\Facades\Artisan::call('config:clear');
+                    $cleared[] = 'Config cache';
+                })(),
+                default => null,
+            };
+        }
+
+        ActivityLog::log('cache_cleared', null, [
+            'types' => $types,
+            'cleared_by' => $request->user()->id,
+        ]);
+
+        return response()->json(['success' => true, 'cleared' => $cleared]);
+    }
+
+    /**
+     * Export data as JSON.
+     */
+    public function exportData(Request $request): JsonResponse
+    {
+        $tables = $request->input('tables', ['visits', 'doctor_profiles', 'objectives']);
+        $data = [];
+
+        foreach ($tables as $table) {
+            try {
+                $data[$table] = DB::table($table)->get();
+            } catch (\Exception $e) {
+                $data[$table] = [];
+            }
+        }
+
+        ActivityLog::log('data_exported', null, [
+            'tables' => $tables,
+            'exported_by' => $request->user()->id,
+        ]);
+
+        return response()->json($data);
     }
 }

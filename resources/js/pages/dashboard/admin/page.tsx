@@ -2,16 +2,20 @@ import { usePage } from "@inertiajs/react"
 import {
   Activity,
   Bell,
+  Building2,
   Check,
   Database,
+  Download,
   Eye,
   EyeOff,
   GraduationCap,
+  HardDrive,
   Palette,
   Play,
   Plus,
   RefreshCcw,
   Send,
+  Server,
   Shield,
   Stethoscope,
   ToggleLeft,
@@ -58,13 +62,27 @@ interface Props {
   featureFlags: FeatureFlag[]
   recentActivity: ActivityLogEntry[]
   users: UserRecord[]
+  companyName: string
+  systemInfo: {
+    php_version: string
+    laravel_version: string
+    environment: string
+    debug_mode: boolean
+    timezone: string
+    db_driver: string
+    cache_driver: string
+    session_driver: string
+    server_os: string
+    memory_usage: string
+    disk_free: string
+  }
 }
 
 export default function AdminDashboard() {
-  const { stats, dbStats, featureFlags: initialFlags, recentActivity, users: initialUsers } = usePage<{ props: Props }>().props as unknown as Props
+  const { stats, dbStats, featureFlags: initialFlags, recentActivity, users: initialUsers, companyName: initialCompanyName, systemInfo } = usePage<{ props: Props }>().props as unknown as Props
   const [flags, setFlags] = useState(initialFlags)
   const [users, setUsers] = useState(initialUsers)
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "flags" | "tutorial" | "database" | "notifications" | "activity" | "themes">("overview")
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "flags" | "tutorial" | "database" | "notifications" | "activity" | "themes" | "branding" | "system">("overview")
   const [showAddUser, setShowAddUser] = useState(false)
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "rep" })
   const [notifData, setNotifData] = useState({ title: "", body: "", priority: "normal", user_ids: [] as number[] })
@@ -72,6 +90,8 @@ export default function AdminDashboard() {
   const [actionFeedback, setActionFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null)
   const [activeTheme, setActiveTheme] = useState(getStoredThemeId)
   const [activeFont, setActiveFont] = useState(getStoredFontId)
+  const [brandName, setBrandName] = useState(initialCompanyName || "Medica")
+  const [brandSaving, setBrandSaving] = useState(false)
 
   const showFeedback = (type: "success" | "error", message: string) => {
     setActionFeedback({ type, message })
@@ -162,6 +182,66 @@ export default function AdminDashboard() {
     setTutorialLoading(false)
   }
 
+  const saveCompanyName = async () => {
+    if (!brandName.trim()) return
+    setBrandSaving(true)
+    const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content
+    const res = await fetch("/admin/company-name", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": token ?? "", "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
+      body: JSON.stringify({ company_name: brandName.trim() }),
+    })
+    if (res.ok) {
+      showFeedback("success", `Company name updated to "${brandName.trim()}"`)
+    } else {
+      showFeedback("error", "Failed to update company name")
+    }
+    setBrandSaving(false)
+  }
+
+  const [cacheClearing, setCacheClearing] = useState(false)
+  const clearCache = async (types: string[]) => {
+    setCacheClearing(true)
+    const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content
+    const res = await fetch("/admin/cache/clear", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": token ?? "", "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
+      body: JSON.stringify({ types }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      showFeedback("success", `Cleared: ${data.cleared.join(", ")}`)
+    } else {
+      showFeedback("error", "Failed to clear cache")
+    }
+    setCacheClearing(false)
+  }
+
+  const [exporting, setExporting] = useState(false)
+  const exportData = async (tables: string[]) => {
+    setExporting(true)
+    const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content
+    const res = await fetch("/admin/export", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": token ?? "", "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
+      body: JSON.stringify({ tables }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `export-${new Date().toISOString().split("T")[0]}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      showFeedback("success", "Data exported successfully")
+    } else {
+      showFeedback("error", "Failed to export data")
+    }
+    setExporting(false)
+  }
+
   const statCards = [
     { label: "Users", value: stats.total_users, icon: Users, accent: "text-primary", sub: `${stats.total_reps} reps · ${stats.total_managers} mgrs` },
     { label: "Visits", value: stats.total_visits, icon: Activity, accent: "text-accent", sub: `${stats.visits_today} today · ${stats.visits_this_week} this week` },
@@ -173,11 +253,13 @@ export default function AdminDashboard() {
     { key: "overview", label: "Overview", icon: Activity },
     { key: "users", label: "Users", icon: Users },
     { key: "flags", label: "Flags", icon: ToggleRight },
+    { key: "branding", label: "Branding", icon: Building2 },
     { key: "tutorial", label: "Tutorial", icon: GraduationCap },
     { key: "database", label: "Database", icon: Database },
     { key: "notifications", label: "Notify", icon: Bell },
     { key: "activity", label: "Activity", icon: Activity },
     { key: "themes", label: "Themes", icon: Palette },
+    { key: "system", label: "System", icon: Server },
   ] as const
 
   return (
@@ -1016,6 +1098,275 @@ export default function AdminDashboard() {
               <p className="text-xs text-muted-foreground">
                 <strong className="text-foreground">Note:</strong> Theme and font preferences are stored in your browser. Each user can have their own look. Changes persist across sessions.
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* ────────────────── BRANDING ────────────────── */}
+        {activeTab === "branding" && (
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h2 className="text-base font-semibold text-foreground sm:text-lg">Company Branding</h2>
+              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Change your company name. This updates the splash screen, sidebar, headers, login page, and all branding across the app.</p>
+            </div>
+
+            {/* Company name editor */}
+            <div className="rounded-xl border border-border/50 bg-card p-5">
+              <h3 className="mb-4 text-sm font-semibold text-foreground">Company Name</h3>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground">Name</label>
+                  <input
+                    type="text"
+                    value={brandName}
+                    onChange={(e) => setBrandName(e.target.value)}
+                    maxLength={60}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition-colors focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                    placeholder="Your company name"
+                  />
+                </div>
+                <button
+                  onClick={saveCompanyName}
+                  disabled={brandSaving || !brandName.trim() || brandName.trim() === initialCompanyName}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {brandSaving ? (
+                    <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Check className="h-3.5 w-3.5" />
+                  )}
+                  {brandSaving ? "Saving…" : "Save"}
+                </button>
+              </div>
+              <p className="mt-2 text-[10px] text-muted-foreground">Max 60 characters. Refresh the page after saving to see changes everywhere.</p>
+            </div>
+
+            {/* Live preview */}
+            <div className="rounded-xl border border-border/50 bg-card p-5">
+              <h3 className="mb-4 text-sm font-semibold text-foreground">Live Preview</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {/* Sidebar preview */}
+                <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+                  <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Sidebar Logo</p>
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm">
+                      <Activity className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-bold tracking-tight text-foreground">{brandName || "Medica"}</span>
+                      <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Rep Console</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Splash preview */}
+                <div className="rounded-lg border border-border/30 p-4" style={{ background: "#1A1510" }}>
+                  <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-white/30">Splash Screen</p>
+                  <div className="flex items-baseline justify-center py-4">
+                    <span style={{ fontFamily: "'DM Serif Display', 'Playfair Display', 'Georgia', serif", fontSize: "40px", color: "#C46A47", lineHeight: 1 }}>
+                      {(brandName || "M").charAt(0)}
+                    </span>
+                    <span style={{ fontFamily: "'DM Serif Display', 'Playfair Display', 'Georgia', serif", fontSize: "40px", color: "#C46A47", lineHeight: 1 }}>
+                      {(brandName || "Medica").slice(1)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Header preview */}
+                <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+                  <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Header Bar</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
+                      <Activity className="h-3.5 w-3.5 text-white" />
+                    </div>
+                    <span className="text-sm font-bold text-foreground">{brandName || "Medica"}</span>
+                  </div>
+                </div>
+
+                {/* Footer preview */}
+                <div className="rounded-lg border border-border/30 bg-muted/20 p-4">
+                  <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Footer</p>
+                  <p className="text-xs text-muted-foreground/60">© 2026 {brandName || "Medica"}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick actions */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                onClick={() => {
+                  sessionStorage.removeItem("medica_splash_shown")
+                  window.location.href = "/"
+                }}
+                className="flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4 text-left transition-all hover:border-primary/30 hover:shadow-sm"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <Play className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Replay Splash Screen</p>
+                  <p className="text-xs text-muted-foreground">Preview the splash animation with current name</p>
+                </div>
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4 text-left transition-all hover:border-accent/30 hover:shadow-sm"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10">
+                  <RefreshCcw className="h-5 w-5 text-accent" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Reload Page</p>
+                  <p className="text-xs text-muted-foreground">Apply branding changes across the app</p>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ────────────────── SYSTEM ────────────────── */}
+        {activeTab === "system" && (
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h2 className="text-base font-semibold text-foreground sm:text-lg">System Information</h2>
+              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Environment details, cache management, and data export tools.</p>
+            </div>
+
+            {/* Environment info */}
+            <div className="rounded-xl border border-border/50 bg-card p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Server className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold text-foreground">Environment</h3>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {[
+                  { label: "PHP", value: systemInfo.php_version },
+                  { label: "Laravel", value: systemInfo.laravel_version },
+                  { label: "Environment", value: systemInfo.environment },
+                  { label: "Debug Mode", value: systemInfo.debug_mode ? "On" : "Off" },
+                  { label: "Timezone", value: systemInfo.timezone },
+                  { label: "Database", value: systemInfo.db_driver },
+                  { label: "Cache", value: systemInfo.cache_driver },
+                  { label: "Sessions", value: systemInfo.session_driver },
+                  { label: "Server OS", value: systemInfo.server_os },
+                  { label: "Memory", value: systemInfo.memory_usage },
+                  { label: "Disk Free", value: systemInfo.disk_free },
+                  { label: "DB Size", value: dbStats.size },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
+                    <span className="text-xs text-muted-foreground">{item.label}</span>
+                    <span className="font-mono text-xs font-medium text-foreground">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Cache management */}
+            <div className="rounded-xl border border-border/50 bg-card p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <HardDrive className="h-4 w-4 text-accent" />
+                <h3 className="text-sm font-semibold text-foreground">Cache Management</h3>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  { label: "App Cache", key: "app", desc: "Flush application cache" },
+                  { label: "View Cache", key: "views", desc: "Clear compiled views" },
+                  { label: "Route Cache", key: "routes", desc: "Clear route cache" },
+                  { label: "Config Cache", key: "config", desc: "Clear config cache" },
+                ].map((cache) => (
+                  <button
+                    key={cache.key}
+                    onClick={() => clearCache([cache.key])}
+                    disabled={cacheClearing}
+                    className="flex flex-col items-start rounded-lg border border-border/40 bg-muted/20 p-3 text-left transition-all hover:border-accent/30 hover:bg-accent/5 disabled:opacity-50"
+                  >
+                    <p className="text-xs font-medium text-foreground">{cache.label}</p>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">{cache.desc}</p>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => clearCache(["app", "views", "routes", "config"])}
+                disabled={cacheClearing}
+                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-accent/10 px-4 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent/20 disabled:opacity-50"
+              >
+                <RefreshCcw className={`h-3.5 w-3.5 ${cacheClearing ? "animate-spin" : ""}`} />
+                Clear All Caches
+              </button>
+            </div>
+
+            {/* Data export */}
+            <div className="rounded-xl border border-border/50 bg-card p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Download className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold text-foreground">Data Export</h3>
+              </div>
+              <p className="mb-4 text-xs text-muted-foreground">Download application data as JSON. Useful for backups or analysis.</p>
+              <div className="grid gap-2 sm:grid-cols-3">
+                <button
+                  onClick={() => exportData(["visits", "doctor_profiles", "objectives", "visit_objectives"])}
+                  disabled={exporting}
+                  className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/20 p-3 text-left transition-all hover:border-primary/30 hover:bg-primary/5 disabled:opacity-50"
+                >
+                  <Download className="h-4 w-4 text-primary" />
+                  <div>
+                    <p className="text-xs font-medium text-foreground">Full Export</p>
+                    <p className="text-[10px] text-muted-foreground">Visits, doctors, objectives</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => exportData(["visits"])}
+                  disabled={exporting}
+                  className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/20 p-3 text-left transition-all hover:border-primary/30 hover:bg-primary/5 disabled:opacity-50"
+                >
+                  <Download className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs font-medium text-foreground">Visits Only</p>
+                    <p className="text-[10px] text-muted-foreground">All visit records</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => exportData(["users", "doctor_profiles"])}
+                  disabled={exporting}
+                  className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/20 p-3 text-left transition-all hover:border-primary/30 hover:bg-primary/5 disabled:opacity-50"
+                >
+                  <Download className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs font-medium text-foreground">Users & Doctors</p>
+                    <p className="text-[10px] text-muted-foreground">User + doctor profiles</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Danger zone */}
+            <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-5">
+              <h3 className="mb-1 text-sm font-semibold text-destructive">Danger Zone</h3>
+              <p className="mb-4 text-xs text-muted-foreground">Destructive actions that cannot be undone. Be careful.</p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => {
+                    if (confirm("This will clear all session storage for you. Continue?")) {
+                      sessionStorage.clear()
+                      showFeedback("success", "Session storage cleared")
+                    }
+                  }}
+                  className="rounded-lg border border-destructive/30 px-3 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+                >
+                  Clear Session Storage
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm("This will clear all local storage (themes, fonts, preferences). Continue?")) {
+                      localStorage.clear()
+                      showFeedback("success", "Local storage cleared — refresh to apply")
+                    }
+                  }}
+                  className="rounded-lg border border-destructive/30 px-3 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+                >
+                  Clear Local Storage
+                </button>
+              </div>
             </div>
           </div>
         )}

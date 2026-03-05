@@ -128,6 +128,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('onboarding/reset', [AdminController::class, 'resetOnboarding'])
             ->middleware('permission:manage onboarding')
             ->name('admin.onboarding.reset');
+        Route::patch('company-name', [AdminController::class, 'updateCompanyName'])
+            ->name('admin.companyName.update');
+        Route::post('cache/clear', [AdminController::class, 'clearCache'])
+            ->name('admin.cache.clear');
+        Route::post('export', [AdminController::class, 'exportData'])
+            ->name('admin.export');
     });
 });
 

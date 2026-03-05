@@ -32,11 +32,6 @@ const sidebarNavItems: NavItem[] = [
         href: editAppearance(),
         icon: null,
     },
-    {
-        title: 'Company Name',
-        href: '/settings/company',
-        icon: null,
-    },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
