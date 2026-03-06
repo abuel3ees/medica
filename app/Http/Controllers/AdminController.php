@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class AdminController extends Controller
 {
@@ -74,7 +76,15 @@ class AdminController extends Controller
                 'created_at' => $u->created_at->format('M d, Y'),
                 'visits_count' => $u->isRep() ? $u->visits()->count() : null,
                 'onboarding_completed' => $u->onboarding_completed,
+                'permissions' => $u->getAllPermissions()->pluck('name')->toArray(),
             ]);
+
+        // Permissions & roles for admin management
+        $allPermissions = Permission::orderBy('name')->pluck('name');
+        $allRoles = Role::with('permissions:name')->orderBy('name')->get()->map(fn ($r) => [
+            'name' => $r->name,
+            'permissions' => $r->permissions->pluck('name'),
+        ]);
 
         return Inertia::render('dashboard/admin/page', [
             'stats' => $stats,
@@ -84,6 +94,8 @@ class AdminController extends Controller
             'users' => $users,
             'companyName' => AppSetting::companyName(),
             'systemInfo' => $this->getSystemInfo(),
+            'allPermissions' => $allPermissions,
+            'allRoles' => $allRoles,
         ]);
     }
 
@@ -319,6 +331,81 @@ class AdminController extends Controller
         ]);
 
         return response()->json(['success' => true, 'reset' => $count]);
+    }
+
+    // ─── Permission Management ──────────────────────────
+
+    /**
+     * Create a new permission.
+     */
+    public function createPermission(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:permissions,name',
+        ]);
+
+        $permission = Permission::create(['name' => $validated['name'], 'guard_name' => 'web']);
+
+        ActivityLog::log('permission_created', $permission, [
+            'name' => $validated['name'],
+            'created_by' => $request->user()->id,
+        ]);
+
+        return response()->json(['success' => true, 'permission' => $permission->name]);
+    }
+
+    /**
+     * Delete a permission.
+     */
+    public function deletePermission(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|exists:permissions,name',
+        ]);
+
+        $permission = Permission::findByName($request->name);
+        $permissionName = $permission->name;
+        $permission->delete();
+
+        ActivityLog::log('permission_deleted', null, [
+            'name' => $permissionName,
+            'deleted_by' => $request->user()->id,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Update a user's direct permissions (grant/revoke).
+     */
+    public function updateUserPermissions(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate([
+            'permissions' => 'required|array',
+            'permissions.*' => 'string|exists:permissions,name',
+        ]);
+
+        $user->syncPermissions($validated['permissions']);
+
+        ActivityLog::log('user_permissions_updated', $user, [
+            'permissions' => $validated['permissions'],
+            'updated_by' => $request->user()->id,
+        ]);
+
+        NotificationController::notify(
+            $user->id,
+            'permissions_updated',
+            'Permissions Updated',
+            'Your permissions have been updated by an administrator.',
+            ['permissions' => $validated['permissions']],
+            'shield',
+            'high'
+        );
+
+        return response()->json([
+            'success' => true,
+            'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
+        ]);
     }
 
     // ─── Helpers ───────────────────────────────────────────

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Objective;
+use App\Models\QuarterlyLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -49,6 +50,10 @@ class ObjectiveController extends Controller
 
         Objective::create($validated);
 
+        QuarterlyLog::record('objective_created', null, $validated['name'], 'normal', [
+            'category' => $validated['category'] ?? null, 'importance' => $validated['importance'], 'created_by' => auth()->user()->name,
+        ]);
+
         return redirect()->route('objectives.index')
             ->with('success', 'Objective created!');
     }
@@ -68,6 +73,10 @@ class ObjectiveController extends Controller
 
         $objective->update($validated);
 
+        QuarterlyLog::record('objective_updated', $objective, $validated['name'], 'normal', [
+            'updated_by' => auth()->user()->name,
+        ]);
+
         return redirect()->route('objectives.index')
             ->with('success', 'Objective updated!');
     }
@@ -81,11 +90,20 @@ class ObjectiveController extends Controller
         if ($objective->visitObjectives()->exists()) {
             $objective->update(['is_active' => false]);
 
+            QuarterlyLog::record('objective_deactivated', $objective, $objective->name, 'normal', [
+                'reason' => 'has linked visits', 'deactivated_by' => auth()->user()->name,
+            ]);
+
             return redirect()->route('objectives.index')
                 ->with('success', 'Objective deactivated (has linked visits).');
         }
 
+        $objName = $objective->name;
         $objective->delete();
+
+        QuarterlyLog::record('objective_deleted', null, $objName, 'normal', [
+            'deleted_by' => auth()->user()->name,
+        ]);
 
         return redirect()->route('objectives.index')
             ->with('success', 'Objective deleted.');

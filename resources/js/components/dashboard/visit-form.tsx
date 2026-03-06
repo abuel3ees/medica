@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 import type {
   DoctorSummary,
@@ -87,6 +86,7 @@ export function VisitForm({
     engagement_quality: initialData?.engagement_quality ?? null,
     access_difficulty: initialData?.access_difficulty ?? null,
     time_spent_minutes: initialData?.time_spent_minutes ?? null,
+    time_goal_status: initialData?.time_goal_status ?? null,
     confidence: initialData?.confidence ?? null,
     stance_before: initialData?.stance_before ?? null,
     stance_after: initialData?.stance_after ?? null,
@@ -364,25 +364,31 @@ export function VisitForm({
             )}
           </div>
 
-          {/* Confidence slider */}
+          {/* Time Goal Status */}
           <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm text-foreground">Confidence</Label>
-              <span className="font-mono text-sm font-bold tabular-nums text-primary">
-                {data.confidence ?? 75}%
-              </span>
-            </div>
-            <Slider
-              value={[data.confidence ?? 75]}
-              onValueChange={([val]) => setData("confidence", val)}
-              min={0}
-              max={100}
-              step={5}
-              className="w-full"
-            />
-            <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>Not sure at all</span>
-              <span>Very confident</span>
+            <Label className="text-sm text-foreground">Time Goal Status</Label>
+            <div className="flex gap-2">
+              {([
+                { value: "met", label: "✅ Met Goal", desc: "×1.0" },
+                { value: "on_progress", label: "📈 On Progress", desc: "×1.41" },
+                { value: "exceeded", label: "🚀 Exceeded", desc: "×2.0" },
+              ] as const).map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`flex flex-1 flex-col items-center gap-0.5 rounded-lg border px-3 py-2.5 text-xs font-medium transition-colors ${
+                    data.time_goal_status === option.value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:bg-secondary/50"
+                  }`}
+                  onClick={() =>
+                    setData("time_goal_status", data.time_goal_status === option.value ? null : option.value)
+                  }
+                >
+                  <span>{option.label}</span>
+                  <span className="font-mono text-[10px] opacity-60">{option.desc}</span>
+                </button>
+              ))}
             </div>
           </div>
 

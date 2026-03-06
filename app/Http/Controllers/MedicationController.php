@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\Medication;
+use App\Models\QuarterlyLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -87,6 +88,25 @@ class MedicationController extends Controller
             );
         }
 
+        // Notify managers about the new medication
+        $managers = User::permission('view all visits')->get();
+        foreach ($managers as $manager) {
+            NotificationController::notify(
+                $manager->id,
+                'medication_added_team',
+                'New Medication Added',
+                auth()->user()->name . " added 💊 {$medication->name} to the database.",
+                ['medication_id' => $medication->id, 'name' => $medication->name],
+                'pill',
+                'normal'
+            );
+        }
+
+        // Quarterly log
+        QuarterlyLog::record('medication_created', $medication, $medication->name, 'normal', [
+            'generic_name' => $medication->generic_name, 'created_by' => auth()->user()->name,
+        ]);
+
         return redirect()->route('medications.index')->with('success', 'Medication added successfully.');
     }
 
@@ -126,6 +146,25 @@ class MedicationController extends Controller
 
         ActivityLog::log('medication_updated', $medication);
 
+        // Notify managers about the update
+        $managers = User::permission('view all visits')->get();
+        foreach ($managers as $manager) {
+            NotificationController::notify(
+                $manager->id,
+                'medication_updated_team',
+                'Medication Updated',
+                auth()->user()->name . " updated 💊 {$medication->name}.",
+                ['medication_id' => $medication->id, 'name' => $medication->name],
+                'edit',
+                'low'
+            );
+        }
+
+        // Quarterly log
+        QuarterlyLog::record('medication_updated', $medication, $medication->name, 'normal', [
+            'updated_by' => auth()->user()->name,
+        ]);
+
         return redirect()->route('medications.index')->with('success', 'Medication updated.');
     }
 
@@ -140,13 +179,19 @@ class MedicationController extends Controller
         ]);
 
         $medName = $medication->name;
+
+        // Quarterly log (before delete)
+        QuarterlyLog::record('medication_deleted', $medication, $medName, 'high', [
+            'deleted_by' => auth()->user()->name,
+        ]);
+
         $medication->delete();
 
-        // Notify admins about medication removal
-        $admins = User::role('admin')->where('id', '!=', auth()->id())->get();
-        foreach ($admins as $admin) {
+        // Notify managers about medication removal
+        $managers = User::permission('view all visits')->where('id', '!=', auth()->id())->get();
+        foreach ($managers as $manager) {
             NotificationController::notify(
-                $admin->id,
+                $manager->id,
                 'medication_deleted',
                 'Medication Removed',
                 "💊 {$medName} has been removed from the database by " . auth()->user()->name . ".",

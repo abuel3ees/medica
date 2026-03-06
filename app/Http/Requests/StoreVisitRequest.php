@@ -27,6 +27,7 @@ class StoreVisitRequest extends FormRequest
             'engagement_quality'  => ['nullable', 'in:low,medium,high'],
             'access_difficulty'   => ['nullable', 'in:A,B,C'],
             'time_spent_minutes'  => ['nullable', 'integer', 'min:1', 'max:480'],
+            'time_goal_status'    => ['nullable', 'in:met,on_progress,exceeded'],
             'confidence'          => ['nullable', 'integer', 'min:0', 'max:100'],
 
             // Stance tracking

@@ -9,6 +9,7 @@ use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\NextStepController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ObjectiveController;
+use App\Http\Controllers\QuarterlyLogController;
 use App\Http\Controllers\VisitController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Models\FeatureFlag;
@@ -87,6 +88,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('medications/{medication}', [MedicationController::class, 'destroy'])->middleware('permission:manage medications')->name('medications.destroy');
     });
 
+    // Quarterly Logs (manager review)
+    Route::middleware('permission:view all visits')->group(function () {
+        Route::get('quarterly-logs', [QuarterlyLogController::class, 'index'])->name('quarterly-logs.index');
+        Route::patch('quarterly-logs/{quarterlyLog}/review', [QuarterlyLogController::class, 'review'])->name('quarterly-logs.review');
+        Route::post('quarterly-logs/bulk-review', [QuarterlyLogController::class, 'bulkReview'])->name('quarterly-logs.bulkReview');
+    });
+
     // Onboarding
     Route::post('onboarding/complete-step', function (\Illuminate\Http\Request $request) {
         $user = $request->user();
@@ -134,6 +142,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('admin.cache.clear');
         Route::post('export', [AdminController::class, 'exportData'])
             ->name('admin.export');
+        // Permission management
+        Route::post('permissions', [AdminController::class, 'createPermission'])
+            ->name('admin.permissions.create');
+        Route::delete('permissions', [AdminController::class, 'deletePermission'])
+            ->name('admin.permissions.delete');
+        Route::patch('users/{user}/permissions', [AdminController::class, 'updateUserPermissions'])
+            ->middleware('permission:manage users')
+            ->name('admin.users.permissions');
     });
 });
 

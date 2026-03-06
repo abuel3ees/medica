@@ -6,6 +6,7 @@ import {
   Bell,
   BookOpen,
   Bot,
+  CalendarRange,
   ClipboardPlus,
   LayoutDashboard,
   LogOut,
@@ -26,6 +27,7 @@ const ALL_NAV: NavEntry[] = [
   { label: "Visits", href: "/visits", icon: Activity, permission: "view visits" },
   { label: "Objectives", href: "/objectives", icon: Target, permission: "view objectives" },
   { label: "Medications", href: "/medications", icon: Pill, permission: "view medications" },
+  { label: "Quarterly Logs", href: "/quarterly-logs", icon: CalendarRange, permission: "view all visits" },
 ]
 
 interface SidebarProps {

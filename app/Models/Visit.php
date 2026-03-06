@@ -21,6 +21,7 @@ class Visit extends Model
         'engagement_quality',
         'access_difficulty',
         'time_spent_minutes',
+        'time_goal_status',
         'confidence',
         'stance_before',
         'stance_after',

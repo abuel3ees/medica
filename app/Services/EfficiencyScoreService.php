@@ -30,7 +30,7 @@ class EfficiencyScoreService
         $difficultyMultiplier = $this->computeDifficultyMultiplier($visit);
 
         // 4. Time factor
-        $timeFactor = $this->computeTimeFactor($visit->time_spent_minutes);
+        $timeFactor = $this->computeTimeFactor($visit->time_spent_minutes, $visit->time_goal_status);
 
         // 5. Confidence adjustment (optional – reduce score slightly when unsure)
         $confidenceAdjustment = $this->computeConfidenceAdjustment($visit->confidence);
@@ -131,31 +131,36 @@ class EfficiencyScoreService
     }
 
     /**
-     * Time factor: sqrt(minutes / 15)  — prevents very long visits from inflating score.
-     * Minimum factor of 1.0 (visits ≤ 15 min aren't penalized extra).
+     * Time factor based on visit time goal assessment:
+     *   'met'       → 1.0   (met the time goal)
+     *   'on_progress' → 1.41 (making progress toward time goal)
+     *   'exceeded'  → 2.0   (exceeded time expectations)
+     *
+     * Falls back to 1.0 if no time goal status is set.
+     * Legacy: if only minutes are provided (no time_goal_status), use 1.0.
      */
-    protected function computeTimeFactor(?int $minutes): float
+    protected function computeTimeFactor(?int $minutes, ?string $timeGoalStatus = null): float
     {
-        if (! $minutes || $minutes <= 0) {
-            return 1.0;
+        if ($timeGoalStatus) {
+            return match ($timeGoalStatus) {
+                'met'         => 1.0,
+                'on_progress' => 1.41,
+                'exceeded'    => 2.0,
+                default       => 1.0,
+            };
         }
 
-        return max(1.0, sqrt($minutes / 15));
+        // Legacy fallback: no time goal status → neutral factor
+        return 1.0;
     }
 
     /**
-     * Confidence adjustment: if confidence is provided (0-100),
-     * reduce score slightly when uncertain.
-     * Full confidence (100) → 1.0, low (0) → 0.85
+     * Confidence adjustment: always returns 1.0 (confidence is now x1 for everything).
      */
     protected function computeConfidenceAdjustment(?int $confidence): float
     {
-        if ($confidence === null) {
-            return 1.0;
-        }
-
-        // Linear scale: 0.85 at 0 confidence, 1.0 at 100 confidence
-        return 0.85 + (0.15 * ($confidence / 100));
+        // Confidence is now always x1
+        return 1.0;
     }
 
     // -----------------------------------------------------------

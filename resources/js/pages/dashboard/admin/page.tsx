@@ -44,6 +44,7 @@ interface UserRecord {
   created_at: string
   visits_count: number | null
   onboarding_completed: boolean
+  permissions: string[]
 }
 
 interface ActivityLogEntry {
@@ -63,6 +64,8 @@ interface Props {
   recentActivity: ActivityLogEntry[]
   users: UserRecord[]
   companyName: string
+  allPermissions: string[]
+  allRoles: { name: string; permissions: string[] }[]
   systemInfo: {
     php_version: string
     laravel_version: string
@@ -79,10 +82,10 @@ interface Props {
 }
 
 export default function AdminDashboard() {
-  const { stats, dbStats, featureFlags: initialFlags, recentActivity, users: initialUsers, companyName: initialCompanyName, systemInfo } = usePage<{ props: Props }>().props as unknown as Props
+  const { stats, dbStats, featureFlags: initialFlags, recentActivity, users: initialUsers, companyName: initialCompanyName, systemInfo, allPermissions: initialPermissions, allRoles } = usePage<{ props: Props }>().props as unknown as Props
   const [flags, setFlags] = useState(initialFlags)
   const [users, setUsers] = useState(initialUsers)
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "flags" | "tutorial" | "database" | "notifications" | "activity" | "themes" | "branding" | "system">("overview")
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "flags" | "tutorial" | "database" | "notifications" | "activity" | "themes" | "branding" | "system" | "permissions">("overview")
   const [showAddUser, setShowAddUser] = useState(false)
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "rep" })
   const [notifData, setNotifData] = useState({ title: "", body: "", priority: "normal", user_ids: [] as number[] })
@@ -92,6 +95,10 @@ export default function AdminDashboard() {
   const [activeFont, setActiveFont] = useState(getStoredFontId)
   const [brandName, setBrandName] = useState(initialCompanyName || "Medica")
   const [brandSaving, setBrandSaving] = useState(false)
+  const [allPermissions, setAllPermissions] = useState(initialPermissions)
+  const [newPermission, setNewPermission] = useState("")
+  const [editingUserPerms, setEditingUserPerms] = useState<number | null>(null)
+  const [editingPerms, setEditingPerms] = useState<string[]>([])
 
   const showFeedback = (type: "success" | "error", message: string) => {
     setActionFeedback({ type, message })
@@ -242,6 +249,58 @@ export default function AdminDashboard() {
     setExporting(false)
   }
 
+  const createPermission = async () => {
+    if (!newPermission.trim()) return
+    const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content
+    const res = await fetch("/admin/permissions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": token ?? "", "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
+      body: JSON.stringify({ name: newPermission.trim() }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setAllPermissions((prev) => [...prev, data.permission].sort())
+      setNewPermission("")
+      showFeedback("success", `Permission "${data.permission}" created`)
+    } else {
+      const err = await res.json().catch(() => ({}))
+      showFeedback("error", err.message || "Failed to create permission")
+    }
+  }
+
+  const deletePermission = async (name: string) => {
+    if (!confirm(`Delete permission "${name}"? Users with this permission will lose it.`)) return
+    const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content
+    const res = await fetch("/admin/permissions", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": token ?? "", "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
+      body: JSON.stringify({ name }),
+    })
+    if (res.ok) {
+      setAllPermissions((prev) => prev.filter((p) => p !== name))
+      showFeedback("success", `Permission "${name}" deleted`)
+    } else {
+      showFeedback("error", "Failed to delete permission")
+    }
+  }
+
+  const saveUserPermissions = async (userId: number) => {
+    const token = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content
+    const res = await fetch(`/admin/users/${userId}/permissions`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": token ?? "", "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
+      body: JSON.stringify({ permissions: editingPerms }),
+    })
+    if (res.ok) {
+      setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, permissions: editingPerms } : u))
+      setEditingUserPerms(null)
+      setEditingPerms([])
+      showFeedback("success", "Permissions updated")
+    } else {
+      showFeedback("error", "Failed to update permissions")
+    }
+  }
+
   const statCards = [
     { label: "Users", value: stats.total_users, icon: Users, accent: "text-primary", sub: `${stats.total_reps} reps · ${stats.total_managers} mgrs` },
     { label: "Visits", value: stats.total_visits, icon: Activity, accent: "text-accent", sub: `${stats.visits_today} today · ${stats.visits_this_week} this week` },
@@ -260,6 +319,7 @@ export default function AdminDashboard() {
     { key: "activity", label: "Activity", icon: Activity },
     { key: "themes", label: "Themes", icon: Palette },
     { key: "system", label: "System", icon: Server },
+    { key: "permissions", label: "Permissions", icon: Shield },
   ] as const
 
   return (
@@ -1366,6 +1426,165 @@ export default function AdminDashboard() {
                 >
                   Clear Local Storage
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ────────────────── PERMISSIONS ────────────────── */}
+        {activeTab === "permissions" && (
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h2 className="text-base font-semibold text-foreground sm:text-lg">Permission Management</h2>
+              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Create permissions, manage user access, and review role defaults.</p>
+            </div>
+
+            {/* Create new permission */}
+            <div className="rounded-xl border border-border/50 bg-card p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Plus className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold text-foreground">Create Permission</h3>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newPermission}
+                  onChange={(e) => setNewPermission(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && createPermission()}
+                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition-colors focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                  placeholder="e.g. manage reports"
+                />
+                <button
+                  onClick={createPermission}
+                  disabled={!newPermission.trim()}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Create
+                </button>
+              </div>
+            </div>
+
+            {/* All permissions list */}
+            <div className="rounded-xl border border-border/50 bg-card p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold text-foreground">All Permissions</h3>
+                </div>
+                <span className="text-[10px] tabular-nums text-muted-foreground">{allPermissions.length} total</span>
+              </div>
+              <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+                {allPermissions.map((perm) => (
+                  <div key={perm} className="flex items-center justify-between rounded-lg border border-border/30 bg-muted/20 px-3 py-2">
+                    <span className="text-xs font-medium text-foreground">{perm}</span>
+                    <button
+                      onClick={() => deletePermission(perm)}
+                      className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      title={`Delete "${perm}"`}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Role defaults (read-only view) */}
+            <div className="rounded-xl border border-border/50 bg-card p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Users className="h-4 w-4 text-accent" />
+                <h3 className="text-sm font-semibold text-foreground">Role Defaults</h3>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {allRoles.map((role) => (
+                  <div key={role.name} className="rounded-lg border border-border/30 bg-muted/10 p-3">
+                    <p className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground">{role.name}</p>
+                    <div className="space-y-1">
+                      {role.permissions.length === 0 ? (
+                        <p className="text-[10px] text-muted-foreground/60">No permissions assigned</p>
+                      ) : role.permissions.map((p) => (
+                        <div key={p} className="flex items-center gap-1.5">
+                          <Check className="h-3 w-3 text-green-500" />
+                          <span className="text-[11px] text-muted-foreground">{p}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* User permission editor */}
+            <div className="rounded-xl border border-border/50 bg-card p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Shield className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold text-foreground">User Permissions</h3>
+              </div>
+              <div className="space-y-2">
+                {users.map((u) => (
+                  <div key={u.id} className="rounded-lg border border-border/30 bg-muted/10 p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                          u.role === "admin" ? "bg-primary/15 text-primary" :
+                          u.role === "manager" ? "bg-accent/15 text-accent" :
+                          "bg-muted text-muted-foreground"
+                        }`}>
+                          {u.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-foreground">{u.name}</p>
+                          <p className="text-[10px] text-muted-foreground">{u.role} · {u.permissions.length} permissions</p>
+                        </div>
+                      </div>
+                      {editingUserPerms === u.id ? (
+                        <div className="flex gap-1.5">
+                          <button
+                            onClick={() => saveUserPermissions(u.id)}
+                            className="rounded-lg bg-primary px-3 py-1.5 text-[11px] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => { setEditingUserPerms(null); setEditingPerms([]) }}
+                            className="rounded-lg border border-border px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/50"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => { setEditingUserPerms(u.id); setEditingPerms([...u.permissions]) }}
+                          className="rounded-lg border border-border px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </div>
+                    {editingUserPerms === u.id && (
+                      <div className="mt-3 grid gap-1.5 border-t border-border/30 pt-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {allPermissions.map((perm) => (
+                          <label key={perm} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/30">
+                            <input
+                              type="checkbox"
+                              checked={editingPerms.includes(perm)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setEditingPerms((prev) => [...prev, perm])
+                                } else {
+                                  setEditingPerms((prev) => prev.filter((p) => p !== perm))
+                                }
+                              }}
+                              className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary/20"
+                            />
+                            <span className="text-[11px] text-muted-foreground">{perm}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

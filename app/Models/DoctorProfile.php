@@ -23,6 +23,8 @@ class DoctorProfile extends Model
         'difficulty_multiplier',
         'years_of_experience',
         'bio',
+        'needs_cross_functional_support',
+        'cross_functional_departments',
     ];
 
     protected function casts(): array
@@ -30,6 +32,7 @@ class DoctorProfile extends Model
         return [
             'difficulty_multiplier' => 'decimal:2',
             'years_of_experience'  => 'integer',
+            'needs_cross_functional_support' => 'boolean',
         ];
     }
 

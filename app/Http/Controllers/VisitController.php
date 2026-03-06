@@ -7,6 +7,7 @@ use App\Models\DoctorProfile;
 use App\Models\NextStep;
 use App\Models\Objective;
 use App\Models\ObjectionTag;
+use App\Models\QuarterlyLog;
 use App\Models\User;
 use App\Models\Visit;
 use App\Models\VisitObjective;
@@ -77,6 +78,7 @@ class VisitController extends Controller
             'engagement_quality'  => $validated['engagement_quality'] ?? null,
             'access_difficulty'   => $validated['access_difficulty'] ?? null,
             'time_spent_minutes'  => $validated['time_spent_minutes'] ?? null,
+            'time_goal_status'    => $validated['time_goal_status'] ?? null,
             'confidence'          => $validated['confidence'] ?? null,
             'stance_before'       => $validated['stance_before'] ?? null,
             'stance_after'        => $validated['stance_after'] ?? null,
@@ -175,6 +177,11 @@ class VisitController extends Controller
             );
         }
 
+        // Quarterly log
+        QuarterlyLog::record('visit_created', $visit, "Visit with Dr. {$doctorName}", 'high', [
+            'rep' => $rep->name, 'doctor' => $doctorName, 'score' => $score, 'type' => $validated['visit_type'],
+        ]);
+
         return redirect()->route('visits.create')
             ->with('success', 'Visit logged successfully! Efficiency score: ' . $visit->efficiency_score);
     }
@@ -235,6 +242,7 @@ class VisitController extends Controller
             'engagement_quality' => $visit->engagement_quality,
             'access_difficulty'  => $visit->access_difficulty,
             'time_spent_minutes' => $visit->time_spent_minutes,
+            'time_goal_status'   => $visit->time_goal_status,
             'confidence'         => $visit->confidence,
             'stance_before'      => $visit->stance_before,
             'stance_after'       => $visit->stance_after,
@@ -277,6 +285,7 @@ class VisitController extends Controller
             'engagement_quality' => $validated['engagement_quality'] ?? null,
             'access_difficulty'  => $validated['access_difficulty'] ?? null,
             'time_spent_minutes' => $validated['time_spent_minutes'] ?? null,
+            'time_goal_status'   => $validated['time_goal_status'] ?? null,
             'confidence'         => $validated['confidence'] ?? null,
             'stance_before'      => $validated['stance_before'] ?? null,
             'stance_after'       => $validated['stance_after'] ?? null,
@@ -332,6 +341,25 @@ class VisitController extends Controller
             'low'
         );
 
+        // Notify managers about the update
+        $managers = User::permission('view all visits')->where('id', '!=', auth()->id())->get();
+        foreach ($managers as $manager) {
+            NotificationController::notify(
+                $manager->id,
+                'visit_updated_team',
+                'Visit Updated',
+                auth()->user()->name . " updated a visit with Dr. {$doctorName}. Score: " . round((float) $score, 2),
+                ['visit_id' => $visit->id, 'rep_id' => auth()->id()],
+                'edit',
+                'low'
+            );
+        }
+
+        // Quarterly log
+        QuarterlyLog::record('visit_updated', $visit, "Visit with Dr. {$doctorName}", 'normal', [
+            'rep' => auth()->user()->name, 'doctor' => $doctorName, 'score' => $score,
+        ]);
+
         return redirect()->route('visits.index')
             ->with('success', 'Visit updated successfully!');
     }
@@ -348,6 +376,11 @@ class VisitController extends Controller
         $doctor = DoctorProfile::with('user:id,name')->find($visit->doctor_profile_id);
         $doctorName = $doctor?->display_name ?? 'Unknown';
 
+        // Quarterly log (before delete)
+        QuarterlyLog::record('visit_deleted', $visit, "Visit with Dr. {$doctorName}", 'high', [
+            'rep' => auth()->user()->name, 'doctor' => $doctorName,
+        ]);
+
         $visit->delete(); // soft delete
 
         NotificationController::notify(
@@ -359,6 +392,20 @@ class VisitController extends Controller
             'trash',
             'low'
         );
+
+        // Notify managers about the deletion
+        $managers = User::permission('view all visits')->where('id', '!=', auth()->id())->get();
+        foreach ($managers as $manager) {
+            NotificationController::notify(
+                $manager->id,
+                'visit_deleted_team',
+                'Visit Deleted',
+                auth()->user()->name . " deleted a visit with Dr. {$doctorName}.",
+                ['rep_id' => auth()->id()],
+                'trash',
+                'normal'
+            );
+        }
 
         return redirect()->route('visits.index')
             ->with('success', 'Visit deleted.');

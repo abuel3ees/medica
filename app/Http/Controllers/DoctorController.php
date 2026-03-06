@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DoctorProfile;
 use App\Models\NextStep;
+use App\Models\QuarterlyLog;
 use App\Models\User;
 use App\Models\Visit;
 use App\Services\EfficiencyScoreService;
@@ -93,6 +94,8 @@ class DoctorController extends Controller
             'license_number'    => ['nullable', 'string', 'max:100'],
             'years_of_experience' => ['nullable', 'integer', 'min:0', 'max:60'],
             'bio'               => ['nullable', 'string', 'max:2000'],
+            'needs_cross_functional_support' => ['nullable', 'boolean'],
+            'cross_functional_departments'   => ['nullable', 'string', 'max:255'],
         ]);
 
         // Create a user for the doctor
@@ -115,6 +118,8 @@ class DoctorController extends Controller
             'license_number'       => $validated['license_number'] ?? null,
             'years_of_experience'  => $validated['years_of_experience'] ?? null,
             'bio'                  => $validated['bio'] ?? null,
+            'needs_cross_functional_support' => $validated['needs_cross_functional_support'] ?? false,
+            'cross_functional_departments'   => $validated['cross_functional_departments'] ?? null,
         ]);
 
         // Notify managers/admins about the new doctor
@@ -141,6 +146,11 @@ class DoctorController extends Controller
             'check-circle',
             'low'
         );
+
+        // Quarterly log
+        QuarterlyLog::record('doctor_created', $user, "Dr. {$validated['name']}", 'high', [
+            'specialty' => $validated['specialty'], 'segment' => $validated['segment'], 'created_by' => auth()->user()->name,
+        ]);
 
         return redirect()->route('doctors.index')
             ->with('success', 'Doctor profile created successfully!');
@@ -179,6 +189,8 @@ class DoctorController extends Controller
                 'license_number'      => $doctor->license_number,
                 'years_of_experience' => $doctor->years_of_experience,
                 'bio'                 => $doctor->bio,
+                'needs_cross_functional_support' => $doctor->needs_cross_functional_support,
+                'cross_functional_departments'   => $doctor->cross_functional_departments,
             ],
         ]);
     }
@@ -202,6 +214,8 @@ class DoctorController extends Controller
             'license_number'    => ['nullable', 'string', 'max:100'],
             'years_of_experience' => ['nullable', 'integer', 'min:0', 'max:60'],
             'bio'               => ['nullable', 'string', 'max:2000'],
+            'needs_cross_functional_support' => ['nullable', 'boolean'],
+            'cross_functional_departments'   => ['nullable', 'string', 'max:255'],
         ]);
 
         $doctor->user->update([
@@ -220,6 +234,8 @@ class DoctorController extends Controller
             'license_number'       => $validated['license_number'] ?? null,
             'years_of_experience'  => $validated['years_of_experience'] ?? null,
             'bio'                  => $validated['bio'] ?? null,
+            'needs_cross_functional_support' => $validated['needs_cross_functional_support'] ?? false,
+            'cross_functional_departments'   => $validated['cross_functional_departments'] ?? null,
         ]);
 
         NotificationController::notify(
@@ -231,6 +247,25 @@ class DoctorController extends Controller
             'edit',
             'low'
         );
+
+        // Notify managers about the update
+        $managers = User::permission('view all visits')->where('id', '!=', auth()->id())->get();
+        foreach ($managers as $manager) {
+            NotificationController::notify(
+                $manager->id,
+                'doctor_updated_team',
+                'Doctor Profile Updated',
+                auth()->user()->name . " updated Dr. {$validated['name']}'s profile.",
+                ['doctor_name' => $validated['name']],
+                'edit',
+                'low'
+            );
+        }
+
+        // Quarterly log
+        QuarterlyLog::record('doctor_updated', $doctor, "Dr. {$validated['name']}", 'normal', [
+            'updated_by' => auth()->user()->name,
+        ]);
 
         return redirect()->route('doctors.index')
             ->with('success', 'Doctor profile updated!');
@@ -244,6 +279,11 @@ class DoctorController extends Controller
         $doctor = DoctorProfile::with('user:id,name')->findOrFail($id);
         $doctorName = $doctor->display_name;
 
+        // Quarterly log (before delete)
+        QuarterlyLog::record('doctor_deleted', $doctor, "Dr. {$doctorName}", 'critical', [
+            'deleted_by' => auth()->user()->name,
+        ]);
+
         $doctor->delete(); // soft delete
 
         NotificationController::notify(
@@ -255,6 +295,20 @@ class DoctorController extends Controller
             'trash',
             'low'
         );
+
+        // Notify managers about the deletion
+        $managers = User::permission('view all visits')->where('id', '!=', auth()->id())->get();
+        foreach ($managers as $manager) {
+            NotificationController::notify(
+                $manager->id,
+                'doctor_deleted_team',
+                'Doctor Profile Deleted',
+                auth()->user()->name . " deleted Dr. {$doctorName}'s profile.",
+                ['doctor_name' => $doctorName],
+                'trash',
+                'high'
+            );
+        }
 
         return redirect()->route('doctors.index')
             ->with('success', 'Doctor profile deleted.');

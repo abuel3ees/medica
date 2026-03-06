@@ -26,6 +26,8 @@ export default function DoctorCreatePage() {
     license_number: "",
     years_of_experience: "" as string | number,
     bio: "",
+    needs_cross_functional_support: false,
+    cross_functional_departments: "" as string,
   })
 
   function handleSubmit(e: React.FormEvent) {
@@ -169,6 +171,56 @@ export default function DoctorCreatePage() {
                     className="bg-input"
                   />
                 </div>
+              </div>
+
+              {/* Cross-Functional Support */}
+              <div className="flex flex-col gap-3 rounded-lg border border-border bg-secondary/10 p-4">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="cross_functional"
+                    checked={data.needs_cross_functional_support}
+                    onChange={(e) => {
+                      setData("needs_cross_functional_support", e.target.checked)
+                      if (!e.target.checked) setData("cross_functional_departments", "")
+                    }}
+                    className="h-4 w-4 rounded border-border accent-primary"
+                  />
+                  <Label htmlFor="cross_functional" className="text-sm font-medium cursor-pointer">
+                    Needs Cross-Functional Support
+                  </Label>
+                </div>
+                {data.needs_cross_functional_support && (
+                  <div className="flex flex-col gap-2 pl-7">
+                    <Label className="text-xs text-muted-foreground">Select Departments</Label>
+                    <div className="flex gap-2">
+                      {(["Marketing", "Medical", "Access"] as const).map((dept) => {
+                        const selected = data.cross_functional_departments.split(",").filter(Boolean)
+                        const isSelected = selected.includes(dept.toLowerCase())
+                        return (
+                          <button
+                            key={dept}
+                            type="button"
+                            className={`flex-1 rounded-md border px-3 py-2 text-xs font-medium transition-colors ${
+                              isSelected
+                                ? "border-primary bg-primary/10 text-primary"
+                                : "border-border text-muted-foreground hover:bg-secondary/50"
+                            }`}
+                            onClick={() => {
+                              const current = data.cross_functional_departments.split(",").filter(Boolean)
+                              const updated = isSelected
+                                ? current.filter((d) => d !== dept.toLowerCase())
+                                : [...current, dept.toLowerCase()]
+                              setData("cross_functional_departments", updated.join(","))
+                            }}
+                          >
+                            {dept}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-2">

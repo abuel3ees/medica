@@ -23,13 +23,13 @@ function computePreviewScore(data: VisitFormData, objectives: Objective[]): numb
   const diffMult =
     data.access_difficulty === "C" ? 0.9 : data.access_difficulty === "A" ? 1.15 : 1.0
 
-  // Time factor
-  const minutes = data.time_spent_minutes ?? 15
-  const timeFactor = Math.max(1.0, Math.sqrt(minutes / 15))
+  // Time factor (new: Met=1, On Progress=1.41, Exceeded=2)
+  const timeFactor = data.time_goal_status === "exceeded" ? 2.0
+    : data.time_goal_status === "on_progress" ? 1.41
+    : 1.0
 
-  // Confidence
-  const conf = data.confidence ?? 75
-  const confAdj = 0.85 + 0.15 * (conf / 100)
+  // Confidence is now always x1
+  const confAdj = 1.0
 
   return Number(((rawOutcome * diffMult / timeFactor) * confAdj).toFixed(3))
 }
@@ -63,8 +63,14 @@ export function EfficiencyPreview({
                   <span className="text-foreground">{formData.objectives.length} selected</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Confidence</span>
-                  <span className="text-foreground">{formData.confidence ?? 75}%</span>
+                  <span className="text-muted-foreground">Time Goal</span>
+                  <span className="text-foreground capitalize">{formData.time_goal_status ? formData.time_goal_status.replace("_", " ") : "—"}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Time Factor</span>
+                  <span className="text-foreground font-mono">
+                    ×{formData.time_goal_status === "exceeded" ? "2.0" : formData.time_goal_status === "on_progress" ? "1.41" : "1.0"}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Access Difficulty</span>
@@ -85,7 +91,8 @@ export function EfficiencyPreview({
 
             {/* Formula explanation */}
             <div className="rounded-md bg-secondary/20 px-3 py-2 text-[10px] text-muted-foreground">
-              <p>Score = (Σ(Outcome × Weight) / ΣWeight + Bonus) × DifficultyMult ÷ TimeFactor × ConfAdj</p>
+              <p>Score = (Σ(Outcome × Weight) / ΣWeight + Bonus) × DifficultyMult ÷ TimeFactor</p>
+              <p className="mt-1">Time: Met=×1 · On Progress=×1.41 · Exceeded=×2 · Confidence=×1</p>
             </div>
           </div>
         </CardContent>

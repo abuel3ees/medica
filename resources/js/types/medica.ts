@@ -38,6 +38,8 @@ export type DoctorSummary = {
   segment: 'A' | 'B' | 'C'
   stance: 'supportive' | 'neutral' | 'resistant'
   access_difficulty: 'A' | 'B' | 'C'
+  needs_cross_functional_support?: boolean
+  cross_functional_departments?: string | null
   visits_count?: number
   trend?: string
 }
@@ -213,6 +215,7 @@ export type VisitFormData = {
   engagement_quality: 'low' | 'medium' | 'high' | null
   access_difficulty: 'A' | 'B' | 'C' | null
   time_spent_minutes: number | null
+  time_goal_status: 'met' | 'on_progress' | 'exceeded' | null
   confidence: number | null
   stance_before: 'supportive' | 'neutral' | 'resistant' | null
   stance_after: 'supportive' | 'neutral' | 'resistant' | null
