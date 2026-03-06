@@ -2,6 +2,7 @@ import { Link, usePage } from "@inertiajs/react"
 import { Activity } from "lucide-react"
 import { SiteHeader } from "@/components/dashboard/site-header"
 import { CTASection } from "@/components/landing/cta-section"
+import { DemoVideoSection } from "@/components/landing/demo-video-section"
 import { FeaturesGrid } from "@/components/landing/features-grid"
 import { HeroSection } from "@/components/landing/hero-section"
 
@@ -14,6 +15,7 @@ export default function LandingPage() {
       <main>
         <HeroSection />
         <FeaturesGrid />
+        <DemoVideoSection />
         <CTASection />
       </main>
       <footer className="border-t border-border/15 py-10">

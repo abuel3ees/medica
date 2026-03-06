@@ -33,9 +33,9 @@ export function HeroSection() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/#demo">
+              <Link href="/#demo-video">
                 <Button variant="ghost" className="h-11 px-5 text-muted-foreground">
-                  Try the demo
+                  Watch the demo
                 </Button>
               </Link>
             </div>
