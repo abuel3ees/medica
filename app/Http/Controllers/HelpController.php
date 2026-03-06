@@ -68,7 +68,7 @@ class HelpController extends Controller
                     ],
                     [
                         'title' => 'Confidence',
-                        'content' => "Confidence is always **×1** — it does not affect your score. This was simplified to keep the scoring straightforward and focused on objective outcomes rather than self-reported feelings.",
+                        'content' => 'Confidence is always **×1** — it does not affect your score. This was simplified to keep the scoring straightforward and focused on objective outcomes rather than self-reported feelings.',
                     ],
                 ],
             ],

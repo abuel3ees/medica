@@ -24,9 +24,9 @@ class AiCoachController extends Controller
         $isManager = $user->hasPermissionTo('view team dashboard');
 
         return Inertia::render('dashboard/ai-coach/page', [
-            'insights'     => $this->generateInsights($user, $isManager),
+            'insights' => $this->generateInsights($user, $isManager),
             'quickActions' => $this->getQuickActions($user, $isManager),
-            'chatHistory'  => [],
+            'chatHistory' => [],
         ]);
     }
 
@@ -44,7 +44,7 @@ class AiCoachController extends Controller
         $response = $this->generateResponse($message, $user, $isManager);
 
         return response()->json([
-            'reply'   => $response['reply'],
+            'reply' => $response['reply'],
             'actions' => $response['actions'] ?? [],
         ]);
     }
@@ -81,10 +81,10 @@ class AiCoachController extends Controller
 
         if ($driver === 'sqlite') {
             $recent = 'date("now", "-14 days")';
-            $older  = 'date("now", "-28 days")';
+            $older = 'date("now", "-28 days")';
         } else {
             $recent = 'DATE_SUB(NOW(), INTERVAL 14 DAY)';
-            $older  = 'DATE_SUB(NOW(), INTERVAL 28 DAY)';
+            $older = 'DATE_SUB(NOW(), INTERVAL 28 DAY)';
         }
 
         $decliningReps = DB::table('visits')
@@ -98,10 +98,10 @@ class AiCoachController extends Controller
 
         if ($decliningReps->count() > 0) {
             $insights[] = [
-                'type'     => 'warning',
-                'icon'     => 'alert',
-                'title'    => 'Performance Decline Detected',
-                'message'  => $decliningReps->count() . ' rep(s) show declining efficiency scores over the past 2 weeks. Consider scheduling one-on-one coaching sessions.',
+                'type' => 'warning',
+                'icon' => 'alert',
+                'title' => 'Performance Decline Detected',
+                'message' => $decliningReps->count().' rep(s) show declining efficiency scores over the past 2 weeks. Consider scheduling one-on-one coaching sessions.',
                 'priority' => 'high',
             ];
         }
@@ -113,9 +113,9 @@ class AiCoachController extends Controller
 
         if ($overdueLoops > 0) {
             $insights[] = [
-                'type'    => 'action',
-                'icon'    => 'clock',
-                'title'   => $overdueLoops . ' Overdue Follow-ups',
+                'type' => 'action',
+                'icon' => 'clock',
+                'title' => $overdueLoops.' Overdue Follow-ups',
                 'message' => 'There are open next-steps that have passed their due dates. Prompt your team to close these loops to maintain doctor relationships.',
                 'priority' => 'high',
             ];
@@ -128,10 +128,10 @@ class AiCoachController extends Controller
 
         if ($neglectedResistant > 0) {
             $insights[] = [
-                'type'    => 'strategy',
-                'icon'    => 'target',
-                'title'   => 'Resistant Doctors Need Attention',
-                'message' => $neglectedResistant . ' resistant-stance doctors haven\'t been visited in 3+ weeks. Assign experienced reps with objection-handling objectives.',
+                'type' => 'strategy',
+                'icon' => 'target',
+                'title' => 'Resistant Doctors Need Attention',
+                'message' => $neglectedResistant.' resistant-stance doctors haven\'t been visited in 3+ weeks. Assign experienced reps with objection-handling objectives.',
                 'priority' => 'medium',
             ];
         }
@@ -147,10 +147,10 @@ class AiCoachController extends Controller
         if ($totalVisits > 0) {
             $rate = round(($topVisits / $totalVisits) * 100);
             $insights[] = [
-                'type'    => 'success',
-                'icon'    => 'trending-up',
-                'title'   => 'High-Performance Rate: ' . $rate . '%',
-                'message' => $topVisits . ' of ' . $totalVisits . ' visits scored above 0.80 efficiency. ' . ($rate >= 50 ? 'Excellent performance!' : 'Aim for 50%+ high-performance visits.'),
+                'type' => 'success',
+                'icon' => 'trending-up',
+                'title' => 'High-Performance Rate: '.$rate.'%',
+                'message' => $topVisits.' of '.$totalVisits.' visits scored above 0.80 efficiency. '.($rate >= 50 ? 'Excellent performance!' : 'Aim for 50%+ high-performance visits.'),
                 'priority' => 'low',
             ];
         }
@@ -170,12 +170,13 @@ class AiCoachController extends Controller
 
         if ($recentVisits->isEmpty()) {
             $insights[] = [
-                'type'    => 'action',
-                'icon'    => 'plus',
-                'title'   => 'Get Started',
+                'type' => 'action',
+                'icon' => 'plus',
+                'title' => 'Get Started',
                 'message' => 'Log your first doctor visit to start receiving personalized coaching insights.',
                 'priority' => 'high',
             ];
+
             return $insights;
         }
 
@@ -183,18 +184,18 @@ class AiCoachController extends Controller
         $avgScore = $recentVisits->avg('efficiency_score');
         if ($avgScore < 0.5) {
             $insights[] = [
-                'type'    => 'coaching',
-                'icon'    => 'brain',
-                'title'   => 'Score Improvement Tips',
-                'message' => 'Your average efficiency is ' . round($avgScore, 2) . '. Focus on: (1) choosing high-importance objectives, (2) keeping visits under 20 minutes, (3) booking follow-up next steps.',
+                'type' => 'coaching',
+                'icon' => 'brain',
+                'title' => 'Score Improvement Tips',
+                'message' => 'Your average efficiency is '.round($avgScore, 2).'. Focus on: (1) choosing high-importance objectives, (2) keeping visits under 20 minutes, (3) booking follow-up next steps.',
                 'priority' => 'high',
             ];
         } elseif ($avgScore >= 0.75) {
             $insights[] = [
-                'type'    => 'success',
-                'icon'    => 'trophy',
-                'title'   => 'Top Performer!',
-                'message' => 'Your efficiency average of ' . round($avgScore, 2) . ' puts you in the top tier. Keep leveraging high-value objectives and efficient time management.',
+                'type' => 'success',
+                'icon' => 'trophy',
+                'title' => 'Top Performer!',
+                'message' => 'Your efficiency average of '.round($avgScore, 2).' puts you in the top tier. Keep leveraging high-value objectives and efficient time management.',
                 'priority' => 'low',
             ];
         }
@@ -207,9 +208,9 @@ class AiCoachController extends Controller
 
         if ($myOverdue > 0) {
             $insights[] = [
-                'type'    => 'warning',
-                'icon'    => 'alert',
-                'title'   => $myOverdue . ' Overdue Follow-up' . ($myOverdue > 1 ? 's' : ''),
+                'type' => 'warning',
+                'icon' => 'alert',
+                'title' => $myOverdue.' Overdue Follow-up'.($myOverdue > 1 ? 's' : ''),
                 'message' => 'Complete these to boost your continuity scores and maintain doctor relationships.',
                 'priority' => 'high',
             ];
@@ -226,11 +227,11 @@ class AiCoachController extends Controller
         if ($totalObjectives > 0) {
             $objRate = round(($metRate / $totalObjectives) * 100);
             $insights[] = [
-                'type'    => $objRate >= 60 ? 'success' : 'coaching',
-                'icon'    => 'target',
-                'title'   => 'Objective Met Rate: ' . $objRate . '%',
+                'type' => $objRate >= 60 ? 'success' : 'coaching',
+                'icon' => 'target',
+                'title' => 'Objective Met Rate: '.$objRate.'%',
                 'message' => $objRate >= 60
-                    ? 'Strong objective completion. ' . $metRate . '/' . $totalObjectives . ' objectives fully met.'
+                    ? 'Strong objective completion. '.$metRate.'/'.$totalObjectives.' objectives fully met.'
                     : 'Try preparing specific talking points before visits. Focus on 1-2 high-weight objectives per visit.',
                 'priority' => 'medium',
             ];
@@ -372,15 +373,15 @@ class AiCoachController extends Controller
             'sup', 'what\'s up', 'yo', 'howdy', 'greetings',
         ])) {
             $greetings = [
-                "Hey there! 👋 How can I help you today?",
-                "Hello! 🙌 Ready to help you crush your targets.",
-                "Hi! 👋 What can I assist you with?",
-                "Hey! 😊 Got a question about your visits, scores, or medications?",
+                'Hey there! 👋 How can I help you today?',
+                'Hello! 🙌 Ready to help you crush your targets.',
+                'Hi! 👋 What can I assist you with?',
+                'Hey! 😊 Got a question about your visits, scores, or medications?',
             ];
 
             return [
-                'reply' => $greetings[array_rand($greetings)] . "\n\n" .
-                    "You can ask me about your **scores**, **doctors**, **objectives**, **follow-ups**, **medications**, or just say \"How am I doing?\" for a quick overview.",
+                'reply' => $greetings[array_rand($greetings)]."\n\n".
+                    'You can ask me about your **scores**, **doctors**, **objectives**, **follow-ups**, **medications**, or just say "How am I doing?" for a quick overview.',
                 'actions' => [],
             ];
         }
@@ -389,9 +390,9 @@ class AiCoachController extends Controller
         if ($this->matchesIntent($message, ['thank', 'thanks', 'thx', 'cheers', 'appreciate'])) {
             $replies = [
                 "You're welcome! 🙌 Let me know if you need anything else.",
-                "Happy to help! 😊 Good luck out there.",
-                "Anytime! Feel free to ask me anything else.",
-                "No problem! 👍 Keep up the great work.",
+                'Happy to help! 😊 Good luck out there.',
+                'Anytime! Feel free to ask me anything else.',
+                'No problem! 👍 Keep up the great work.',
             ];
 
             return [
@@ -417,26 +418,26 @@ class AiCoachController extends Controller
             ];
 
             return [
-                'reply' => $jokes[array_rand($jokes)] . "\n\nNow, anything work-related I can help with? 😊",
+                'reply' => $jokes[array_rand($jokes)]."\n\nNow, anything work-related I can help with? 😊",
                 'actions' => [],
             ];
         }
 
         // Default — better guidance with more options
         return [
-            'reply' => "I'm not sure I understood that. Here's everything I can help with:\n\n" .
-                "📊 **\"How can I improve my scores?\"** — Personalized efficiency tips\n" .
-                "🩺 **\"Doctor strategies\"** — Handling resistant doctors\n" .
-                "🎯 **\"Objective planning\"** — Which objectives to focus on\n" .
-                "⏱️ **\"Time management\"** — Optimal visit duration\n" .
-                "🔄 **\"My follow-ups\"** — Open loops & next steps\n" .
-                "📈 **\"How am I doing?\"** — 30-day performance overview\n" .
-                "💊 **\"Tell me about [medication]\"** — Drug information\n" .
-                "🤝 **\"Rapport tips\"** — Building doctor relationships\n" .
-                "🛡️ **\"Objection handling\"** — Overcoming pushback\n" .
-                "📝 **\"How to log a visit\"** — Step-by-step guide\n" .
-                "⚔️ **\"Competitive advantage\"** — Differentiation tips\n\n" .
-                "Try rephrasing, or tap one of the quick actions below!",
+            'reply' => "I'm not sure I understood that. Here's everything I can help with:\n\n".
+                "📊 **\"How can I improve my scores?\"** — Personalized efficiency tips\n".
+                "🩺 **\"Doctor strategies\"** — Handling resistant doctors\n".
+                "🎯 **\"Objective planning\"** — Which objectives to focus on\n".
+                "⏱️ **\"Time management\"** — Optimal visit duration\n".
+                "🔄 **\"My follow-ups\"** — Open loops & next steps\n".
+                "📈 **\"How am I doing?\"** — 30-day performance overview\n".
+                "💊 **\"Tell me about [medication]\"** — Drug information\n".
+                "🤝 **\"Rapport tips\"** — Building doctor relationships\n".
+                "🛡️ **\"Objection handling\"** — Overcoming pushback\n".
+                "📝 **\"How to log a visit\"** — Step-by-step guide\n".
+                "⚔️ **\"Competitive advantage\"** — Differentiation tips\n\n".
+                'Try rephrasing, or tap one of the quick actions below!',
             'actions' => [],
         ];
     }
@@ -447,16 +448,16 @@ class AiCoachController extends Controller
     private function visitLoggingHelp(): array
     {
         return [
-            'reply' => "📝 **How to Log a Visit:**\n\n" .
-                "1. Go to **Check-in** from the sidebar or dashboard\n" .
-                "2. **Select a doctor** — this loads their context (stance, difficulty, history)\n" .
-                "3. **Choose objectives** — pick 1-3 objectives to discuss. High-weight ones (Clinical Data, Objection Handling) score higher\n" .
-                "4. **Set outcomes** — for each objective, mark if it was Fully Met, Partially Met, or Not Met\n" .
-                "5. **Record details** — time spent, engagement quality, confidence level\n" .
-                "6. **Doctor stance** — note any shift (resistant → neutral = +0.10 bonus!)\n" .
-                "7. **Next step** — always book a follow-up for +0.10 progress bonus\n" .
-                "8. **Submit** — your efficiency score calculates automatically!\n\n" .
-                "💡 **Pro tip:** Log visits right after they happen while details are fresh.",
+            'reply' => "📝 **How to Log a Visit:**\n\n".
+                "1. Go to **Check-in** from the sidebar or dashboard\n".
+                "2. **Select a doctor** — this loads their context (stance, difficulty, history)\n".
+                "3. **Choose objectives** — pick 1-3 objectives to discuss. High-weight ones (Clinical Data, Objection Handling) score higher\n".
+                "4. **Set outcomes** — for each objective, mark if it was Fully Met, Partially Met, or Not Met\n".
+                "5. **Record details** — time spent, engagement quality, confidence level\n".
+                "6. **Doctor stance** — note any shift (resistant → neutral = +0.10 bonus!)\n".
+                "7. **Next step** — always book a follow-up for +0.10 progress bonus\n".
+                "8. **Submit** — your efficiency score calculates automatically!\n\n".
+                '💡 **Pro tip:** Log visits right after they happen while details are fresh.',
             'actions' => [
                 ['label' => 'Log a Visit Now', 'href' => '/visits/create'],
             ],
@@ -469,19 +470,19 @@ class AiCoachController extends Controller
     private function competitiveHelp(): array
     {
         return [
-            'reply' => "⚔️ **Competitive Differentiation Tips:**\n\n" .
-                "**When a doctor uses a competitor's product:**\n" .
-                "1. Don't bash the competition — acknowledge their product's role\n" .
-                "2. Focus on **unmet needs** — what does the competitor NOT address?\n" .
-                "3. Use **clinical data** as your differentiator — objective evidence beats opinions\n" .
-                "4. Ask \"What would you change?\" — let the doctor identify gaps themselves\n" .
-                "5. Position your product as **complementary**, not just replacement\n\n" .
-                "**Battle card framework:**\n" .
-                "• **Know:** Their product's strengths and weaknesses\n" .
-                "• **Lead:** With YOUR unique clinical advantage\n" .
-                "• **Evidence:** Have 2-3 studies ready to reference\n" .
-                "• **Bridge:** \"Many doctors in [specialty] have found…\"\n\n" .
-                "*Use the Competitive Differentiation objective when you plan to discuss these points.*",
+            'reply' => "⚔️ **Competitive Differentiation Tips:**\n\n".
+                "**When a doctor uses a competitor's product:**\n".
+                "1. Don't bash the competition — acknowledge their product's role\n".
+                "2. Focus on **unmet needs** — what does the competitor NOT address?\n".
+                "3. Use **clinical data** as your differentiator — objective evidence beats opinions\n".
+                "4. Ask \"What would you change?\" — let the doctor identify gaps themselves\n".
+                "5. Position your product as **complementary**, not just replacement\n\n".
+                "**Battle card framework:**\n".
+                "• **Know:** Their product's strengths and weaknesses\n".
+                "• **Lead:** With YOUR unique clinical advantage\n".
+                "• **Evidence:** Have 2-3 studies ready to reference\n".
+                "• **Bridge:** \"Many doctors in [specialty] have found…\"\n\n".
+                '*Use the Competitive Differentiation objective when you plan to discuss these points.*',
             'actions' => [
                 ['label' => 'Log a Visit', 'href' => '/visits/create'],
             ],
@@ -494,21 +495,21 @@ class AiCoachController extends Controller
     private function rapportHelp(): array
     {
         return [
-            'reply' => "🤝 **Building Doctor Relationships:**\n\n" .
-                "**First visits:**\n" .
-                "• Research the doctor's publications and interests beforehand\n" .
-                "• Lead with a genuine question, not a pitch\n" .
-                "• Respect their time — keep it under 10 minutes\n" .
-                "• Leave something valuable (relevant study, not just samples)\n\n" .
-                "**Building trust over time:**\n" .
-                "1. **Consistency** — show up when you say you will\n" .
-                "2. **Follow through** — always complete your next steps\n" .
-                "3. **Listen more than talk** — note their concerns and address them next visit\n" .
-                "4. **Add value** — share relevant CME opportunities, patient resources\n" .
-                "5. **Be honest** — if you don't know, say so and follow up\n\n" .
-                "**Shifting stance (resistant → neutral → supportive):**\n" .
-                "• It takes 3-5 consistent, value-adding visits\n" .
-                "• Each shift earns you +0.10 on your efficiency score\n" .
+            'reply' => "🤝 **Building Doctor Relationships:**\n\n".
+                "**First visits:**\n".
+                "• Research the doctor's publications and interests beforehand\n".
+                "• Lead with a genuine question, not a pitch\n".
+                "• Respect their time — keep it under 10 minutes\n".
+                "• Leave something valuable (relevant study, not just samples)\n\n".
+                "**Building trust over time:**\n".
+                "1. **Consistency** — show up when you say you will\n".
+                "2. **Follow through** — always complete your next steps\n".
+                "3. **Listen more than talk** — note their concerns and address them next visit\n".
+                "4. **Add value** — share relevant CME opportunities, patient resources\n".
+                "5. **Be honest** — if you don't know, say so and follow up\n\n".
+                "**Shifting stance (resistant → neutral → supportive):**\n".
+                "• It takes 3-5 consistent, value-adding visits\n".
+                "• Each shift earns you +0.10 on your efficiency score\n".
                 "• Focus on their patients' outcomes, not product features",
             'actions' => [
                 ['label' => 'View Doctors', 'href' => '/doctors'],
@@ -522,21 +523,21 @@ class AiCoachController extends Controller
     private function objectionHandlingHelp(): array
     {
         return [
-            'reply' => "🛡️ **Objection Handling Framework:**\n\n" .
-                "Use the **LAER** method:\n\n" .
-                "**L — Listen:** Let the doctor finish without interrupting. Repeat back what they said.\n\n" .
-                "**A — Acknowledge:** \"I understand your concern about…\" Validate their perspective.\n\n" .
-                "**E — Explore:** \"Can you tell me more about…?\" Dig deeper to find the real objection.\n\n" .
-                "**R — Respond:** Address with evidence. Use clinical data, not marketing claims.\n\n" .
-                "**Common objections & responses:**\n\n" .
-                "| Objection | Response Strategy |\n" .
-                "|-----------|------------------|\n" .
-                "| \"I'm happy with current treatment\" | Ask about unmet patient needs |\n" .
-                "| \"Too expensive\" | Discuss value + patient outcomes |\n" .
-                "| \"Not enough evidence\" | Share recent clinical studies |\n" .
-                "| \"Side effect concerns\" | Compare safety profiles with data |\n" .
-                "| \"No time to discuss\" | Request brief follow-up slot |\n\n" .
-                "*Tag objections in your visit log — this helps track patterns across doctors.*",
+            'reply' => "🛡️ **Objection Handling Framework:**\n\n".
+                "Use the **LAER** method:\n\n".
+                "**L — Listen:** Let the doctor finish without interrupting. Repeat back what they said.\n\n".
+                "**A — Acknowledge:** \"I understand your concern about…\" Validate their perspective.\n\n".
+                "**E — Explore:** \"Can you tell me more about…?\" Dig deeper to find the real objection.\n\n".
+                "**R — Respond:** Address with evidence. Use clinical data, not marketing claims.\n\n".
+                "**Common objections & responses:**\n\n".
+                "| Objection | Response Strategy |\n".
+                "|-----------|------------------|\n".
+                "| \"I'm happy with current treatment\" | Ask about unmet patient needs |\n".
+                "| \"Too expensive\" | Discuss value + patient outcomes |\n".
+                "| \"Not enough evidence\" | Share recent clinical studies |\n".
+                "| \"Side effect concerns\" | Compare safety profiles with data |\n".
+                "| \"No time to discuss\" | Request brief follow-up slot |\n\n".
+                '*Tag objections in your visit log — this helps track patterns across doctors.*',
             'actions' => [
                 ['label' => 'Log a Visit', 'href' => '/visits/create'],
             ],
@@ -558,20 +559,20 @@ class AiCoachController extends Controller
         $segC = $segments['C'] ?? 0;
 
         return [
-            'reply' => "📊 **Doctor Segmentation Guide:**\n\n" .
-                "| Segment | Priority | Visit Frequency | Current Count |\n" .
-                "|---------|----------|-----------------|---------------|\n" .
-                "| **A (High)** | 🔴 Top priority | 2-3x/month | {$segA} doctors |\n" .
-                "| **B (Medium)** | 🟡 Regular | 1-2x/month | {$segB} doctors |\n" .
-                "| **C (Low)** | 🟢 Maintenance | 1x/month or less | {$segC} doctors |\n\n" .
-                "**Segmentation strategy:**\n" .
-                "• Spend **60%** of your time on Segment A doctors\n" .
-                "• Spend **30%** on Segment B — these are your growth opportunities\n" .
-                "• Spend **10%** on Segment C — maintain relationships\n\n" .
-                "**Moving doctors up:**\n" .
-                "• Track prescription volume and advocacy\n" .
-                "• A neutral-to-supportive shift often correlates with segment upgrade\n" .
-                "• Use the difficulty multiplier — hard-access A-tier doctors boost your score by 1.15×",
+            'reply' => "📊 **Doctor Segmentation Guide:**\n\n".
+                "| Segment | Priority | Visit Frequency | Current Count |\n".
+                "|---------|----------|-----------------|---------------|\n".
+                "| **A (High)** | 🔴 Top priority | 2-3x/month | {$segA} doctors |\n".
+                "| **B (Medium)** | 🟡 Regular | 1-2x/month | {$segB} doctors |\n".
+                "| **C (Low)** | 🟢 Maintenance | 1x/month or less | {$segC} doctors |\n\n".
+                "**Segmentation strategy:**\n".
+                "• Spend **60%** of your time on Segment A doctors\n".
+                "• Spend **30%** on Segment B — these are your growth opportunities\n".
+                "• Spend **10%** on Segment C — maintain relationships\n\n".
+                "**Moving doctors up:**\n".
+                "• Track prescription volume and advocacy\n".
+                "• A neutral-to-supportive shift often correlates with segment upgrade\n".
+                '• Use the difficulty multiplier — hard-access A-tier doctors boost your score by 1.15×',
             'actions' => [
                 ['label' => 'View Doctors', 'href' => '/doctors'],
             ],
@@ -584,19 +585,19 @@ class AiCoachController extends Controller
     private function capabilitiesHelp(): array
     {
         return [
-            'reply' => "🤖 **Here's everything I can help you with:**\n\n" .
-                "📊 **Efficiency Scores** — Tips to improve, formula explained, personalized advice\n" .
-                "🩺 **Doctor Strategies** — Handling resistant docs, access tips, stance-shifting\n" .
-                "🎯 **Objectives** — Which to focus on, weight explained, planning visits\n" .
-                "⏱️ **Time Management** — Optimal visit length, scheduling tips\n" .
-                "🔄 **Follow-ups** — Your open loops, overdue items, completion tips\n" .
-                "📈 **Performance** — 30-day overview, trends, comparative stats\n" .
-                "💊 **Medications** — Drug info, dosage, side effects, interactions\n" .
-                "🤝 **Rapport Building** — Relationship tips, trust building, first impressions\n" .
-                "🛡️ **Objection Handling** — LAER method, common objections, responses\n" .
-                "⚔️ **Competitive Intel** — Differentiation tips, battle card framework\n" .
-                "📊 **Segmentation** — A/B/C tiers, visit frequency, territory planning\n" .
-                "📝 **Visit Logging** — Step-by-step guide to check-in\n\n" .
+            'reply' => "🤖 **Here's everything I can help you with:**\n\n".
+                "📊 **Efficiency Scores** — Tips to improve, formula explained, personalized advice\n".
+                "🩺 **Doctor Strategies** — Handling resistant docs, access tips, stance-shifting\n".
+                "🎯 **Objectives** — Which to focus on, weight explained, planning visits\n".
+                "⏱️ **Time Management** — Optimal visit length, scheduling tips\n".
+                "🔄 **Follow-ups** — Your open loops, overdue items, completion tips\n".
+                "📈 **Performance** — 30-day overview, trends, comparative stats\n".
+                "💊 **Medications** — Drug info, dosage, side effects, interactions\n".
+                "🤝 **Rapport Building** — Relationship tips, trust building, first impressions\n".
+                "🛡️ **Objection Handling** — LAER method, common objections, responses\n".
+                "⚔️ **Competitive Intel** — Differentiation tips, battle card framework\n".
+                "📊 **Segmentation** — A/B/C tiers, visit frequency, territory planning\n".
+                "📝 **Visit Logging** — Step-by-step guide to check-in\n\n".
                 "Just ask naturally — I'll figure out what you need! 💡",
             'actions' => [],
         ];
@@ -610,7 +611,7 @@ class AiCoachController extends Controller
         foreach ($patterns as $pattern) {
             if (str_contains($pattern, '.*')) {
                 // Regex pattern
-                if (preg_match('/' . $pattern . '/i', $message)) {
+                if (preg_match('/'.$pattern.'/i', $message)) {
                     return true;
                 }
             } else {
@@ -619,6 +620,7 @@ class AiCoachController extends Controller
                 }
             }
         }
+
         return false;
     }
 
@@ -671,7 +673,7 @@ class AiCoachController extends Controller
             }
 
             return [
-                'reply'   => implode("\n", $sections),
+                'reply' => implode("\n", $sections),
                 'actions' => [
                     ['label' => 'View All Medications', 'href' => '/medications'],
                 ],
@@ -687,11 +689,11 @@ class AiCoachController extends Controller
             $this->notifyAdminsUnknownMedication($askedMedName, auth()->user());
 
             return [
-                'reply'   => "💊 I don't have information about **\"{$askedMedName}\"** in our database.\n\n" .
-                    "I've flagged this for the admin team so they can add it. In the meantime, you can check the medications page for what's currently available.\n\n" .
-                    "**Currently in the database ({$medications->count()}):**\n" .
-                    $medications->take(5)->map(fn ($m) => "• {$m->name}")->implode("\n") .
-                    ($medications->count() > 5 ? "\n• ...and " . ($medications->count() - 5) . " more" : ""),
+                'reply' => "💊 I don't have information about **\"{$askedMedName}\"** in our database.\n\n".
+                    "I've flagged this for the admin team so they can add it. In the meantime, you can check the medications page for what's currently available.\n\n".
+                    "**Currently in the database ({$medications->count()}):**\n".
+                    $medications->take(5)->map(fn ($m) => "• {$m->name}")->implode("\n").
+                    ($medications->count() > 5 ? "\n• ...and ".($medications->count() - 5).' more' : ''),
                 'actions' => [
                     ['label' => 'View Medications', 'href' => '/medications'],
                 ],
@@ -701,19 +703,19 @@ class AiCoachController extends Controller
         // General medication list
         if ($medications->isEmpty()) {
             return [
-                'reply'   => "💊 No medications have been added to the database yet. A manager or admin can import medication PDFs from the Medications page.",
+                'reply' => '💊 No medications have been added to the database yet. A manager or admin can import medication PDFs from the Medications page.',
                 'actions' => [
                     ['label' => 'Medications Page', 'href' => '/medications'],
                 ],
             ];
         }
 
-        $medList = $medications->map(fn ($m) => "• **{$m->name}** — " . ($m->generic_name ?? 'N/A'))->implode("\n");
+        $medList = $medications->map(fn ($m) => "• **{$m->name}** — ".($m->generic_name ?? 'N/A'))->implode("\n");
 
         return [
-            'reply'   => "💊 **Available Medications ({$medications->count()}):**\n\n{$medList}\n\n" .
-                "Ask about a specific medication for detailed information including indications, dosage, side effects, and contraindications.\n\n" .
-                "*Example: \"Tell me about Atorvastatin\" or \"What are the side effects of Metformin?\"*",
+            'reply' => "💊 **Available Medications ({$medications->count()}):**\n\n{$medList}\n\n".
+                "Ask about a specific medication for detailed information including indications, dosage, side effects, and contraindications.\n\n".
+                '*Example: "Tell me about Atorvastatin" or "What are the side effects of Metformin?"*',
             'actions' => [
                 ['label' => 'View Medications', 'href' => '/medications'],
             ],
@@ -748,9 +750,9 @@ class AiCoachController extends Controller
         }
 
         return [
-            'reply' => "📊 **Your Recent Efficiency: " . round($avg, 2) . "**\n\n" .
-                ($avg < 0.5 ? "Let's work on improving that! Here are targeted tips:\n\n" : "Good score! Here's how to push even higher:\n\n") .
-                implode("\n", array_map(fn ($t, $i) => ($i + 1) . ". " . $t, $tips, array_keys($tips))) .
+            'reply' => '📊 **Your Recent Efficiency: '.round($avg, 2)."**\n\n".
+                ($avg < 0.5 ? "Let's work on improving that! Here are targeted tips:\n\n" : "Good score! Here's how to push even higher:\n\n").
+                implode("\n", array_map(fn ($t, $i) => ($i + 1).'. '.$t, $tips, array_keys($tips))).
                 "\n\n*The efficiency formula rewards objective completion, brevity, and continuity.*",
             'actions' => [
                 ['label' => 'Log a Visit', 'href' => '/visits/create'],
@@ -766,16 +768,16 @@ class AiCoachController extends Controller
             ->limit(5)
             ->get();
 
-        $docList = $resistantDocs->map(fn ($d) => "• **" . $d->display_name . "** (" . $d->specialty . ") — " . $d->access_difficulty . " access")->implode("\n");
+        $docList = $resistantDocs->map(fn ($d) => '• **'.$d->display_name.'** ('.$d->specialty.') — '.$d->access_difficulty.' access')->implode("\n");
 
         return [
-            'reply' => "🩺 **Strategies for Difficult Doctors:**\n\n" .
-                "**For resistant-stance doctors:**\n" .
-                "1. Lead with **clinical data** — they respond to evidence, not sales pitches\n" .
-                "2. Use the **Objection Handling** objective to directly address their concerns\n" .
-                "3. Keep visits short (10-15 min) — respect their time to build trust\n" .
-                "4. Book a **follow-up** to show commitment\n\n" .
-                ($docList ? "**Current resistant doctors in your territory:**\n" . $docList : "No resistant doctors found in the database.") .
+            'reply' => "🩺 **Strategies for Difficult Doctors:**\n\n".
+                "**For resistant-stance doctors:**\n".
+                "1. Lead with **clinical data** — they respond to evidence, not sales pitches\n".
+                "2. Use the **Objection Handling** objective to directly address their concerns\n".
+                "3. Keep visits short (10-15 min) — respect their time to build trust\n".
+                "4. Book a **follow-up** to show commitment\n\n".
+                ($docList ? "**Current resistant doctors in your territory:**\n".$docList : 'No resistant doctors found in the database.').
                 "\n\n*Shifting a doctor from resistant → neutral adds +0.10 to your efficiency score!*",
             'actions' => [
                 ['label' => 'View Doctors', 'href' => '/doctors'],
@@ -786,21 +788,21 @@ class AiCoachController extends Controller
     private function objectiveHelp($user): array
     {
         return [
-            'reply' => "🎯 **Objective Strategy Guide:**\n\n" .
-                "**High-weight objectives (1.3×):**\n" .
-                "• Clinical Data Presentation\n" .
-                "• Objection Handling\n" .
-                "• Formulary Request\n" .
-                "• Safety/Compliance Update\n\n" .
-                "**Standard objectives (1.0×):**\n" .
-                "• Product Introduction\n" .
-                "• Follow-up Discussion\n" .
-                "• Patient Case Review\n" .
-                "• Competitive Differentiation\n\n" .
-                "**Low-weight objectives (0.7×):**\n" .
-                "• Sample Delivery\n" .
-                "• Relationship Building\n\n" .
-                "**Pro tip:** Always include at least one high-weight objective per visit. Fully meeting a 1.3× objective significantly boosts your efficiency score.",
+            'reply' => "🎯 **Objective Strategy Guide:**\n\n".
+                "**High-weight objectives (1.3×):**\n".
+                "• Clinical Data Presentation\n".
+                "• Objection Handling\n".
+                "• Formulary Request\n".
+                "• Safety/Compliance Update\n\n".
+                "**Standard objectives (1.0×):**\n".
+                "• Product Introduction\n".
+                "• Follow-up Discussion\n".
+                "• Patient Case Review\n".
+                "• Competitive Differentiation\n\n".
+                "**Low-weight objectives (0.7×):**\n".
+                "• Sample Delivery\n".
+                "• Relationship Building\n\n".
+                '**Pro tip:** Always include at least one high-weight objective per visit. Fully meeting a 1.3× objective significantly boosts your efficiency score.',
             'actions' => [
                 ['label' => 'Log a Visit', 'href' => '/visits/create'],
             ],
@@ -814,20 +816,20 @@ class AiCoachController extends Controller
             ->where('visit_date', '>=', now()->subDays(30))
             ->avg('time_spent_minutes');
 
-        $avgStr = $avgTime ? round($avgTime) . ' minutes' : 'unknown (log more visits)';
+        $avgStr = $avgTime ? round($avgTime).' minutes' : 'unknown (log more visits)';
 
         return [
-            'reply' => "⏱️ **Time Management:**\n\n" .
-                "Your average visit time: **" . $avgStr . "**\n\n" .
-                "The scoring formula uses `sqrt(minutes / 15)` as a time penalty:\n" .
-                "• **15 min or less** → no penalty (factor = 1.0)\n" .
-                "• **30 min** → factor = 1.41 (29% reduction)\n" .
-                "• **60 min** → factor = 2.0 (50% reduction)\n\n" .
-                "**Tips for shorter, effective visits:**\n" .
-                "1. Prepare 2-3 key talking points before arriving\n" .
-                "2. Lead with the most important objective first\n" .
-                "3. Use a \"one thing\" close — ask for one specific action\n" .
-                "4. Schedule follow-ups instead of extending the current visit",
+            'reply' => "⏱️ **Time Management:**\n\n".
+                'Your average visit time: **'.$avgStr."**\n\n".
+                "The scoring formula uses `sqrt(minutes / 15)` as a time penalty:\n".
+                "• **15 min or less** → no penalty (factor = 1.0)\n".
+                "• **30 min** → factor = 1.41 (29% reduction)\n".
+                "• **60 min** → factor = 2.0 (50% reduction)\n\n".
+                "**Tips for shorter, effective visits:**\n".
+                "1. Prepare 2-3 key talking points before arriving\n".
+                "2. Lead with the most important objective first\n".
+                "3. Use a \"one thing\" close — ask for one specific action\n".
+                '4. Schedule follow-ups instead of extending the current visit',
             'actions' => [
                 ['label' => 'View My Visits', 'href' => '/visits'],
             ],
@@ -842,18 +844,18 @@ class AiCoachController extends Controller
             ->limit(5)
             ->get();
 
-        $loopList = $openLoops->map(fn ($ns) => "• " . $ns->description . " — Due: " . ($ns->due_date?->format('M d') ?? 'No date') . ($ns->due_date?->isPast() ? ' ⚠️ **OVERDUE**' : ''))->implode("\n");
+        $loopList = $openLoops->map(fn ($ns) => '• '.$ns->description.' — Due: '.($ns->due_date?->format('M d') ?? 'No date').($ns->due_date?->isPast() ? ' ⚠️ **OVERDUE**' : ''))->implode("\n");
 
         return [
-            'reply' => "🔄 **Follow-up & Next Steps:**\n\n" .
+            'reply' => "🔄 **Follow-up & Next Steps:**\n\n".
                 ($openLoops->count() > 0
-                    ? "**Your open loops (" . $openLoops->count() . "):**\n" . $loopList . "\n\n"
-                    : "✅ No open loops — you're all caught up!\n\n") .
-                "**Why follow-ups matter:**\n" .
-                "• Booking a next step adds **+0.10** to your efficiency score\n" .
-                "• Completing a loop from a previous visit adds another **+0.10**\n" .
-                "• Consistent follow-through builds doctor trust and shifts stance\n\n" .
-                "**Pro tip:** Use specific next-step types like \"Send materials\" or \"Schedule meeting\" — concrete actions are easier to complete.",
+                    ? '**Your open loops ('.$openLoops->count()."):**\n".$loopList."\n\n"
+                    : "✅ No open loops — you're all caught up!\n\n").
+                "**Why follow-ups matter:**\n".
+                "• Booking a next step adds **+0.10** to your efficiency score\n".
+                "• Completing a loop from a previous visit adds another **+0.10**\n".
+                "• Consistent follow-through builds doctor trust and shifts stance\n\n".
+                '**Pro tip:** Use specific next-step types like "Send materials" or "Schedule meeting" — concrete actions are easier to complete.',
             'actions' => [
                 ['label' => 'Log a Visit', 'href' => '/visits/create'],
             ],
@@ -875,15 +877,15 @@ class AiCoachController extends Controller
             ->count();
 
         return [
-            'reply' => "📈 **Your 30-Day Performance Overview:**\n\n" .
-                "| Metric | Value |\n" .
-                "|--------|-------|\n" .
-                "| Total visits | **" . $totalVisits . "** |\n" .
-                "| Avg efficiency | **" . round($avgScore, 2) . "** |\n" .
-                "| High-score visits (≥0.80) | **" . $topVisits . "** |\n" .
-                "| Open follow-ups | **" . $openLoops . "** |\n\n" .
-                ($avgScore >= 0.7 ? "🌟 You're performing above average! " : ($avgScore >= 0.5 ? "💪 Room for improvement — focus on high-weight objectives. " : "📚 Let's build a strategy — try asking \"How can I improve my scores?\" ")) .
-                "Keep up the consistent effort!",
+            'reply' => "📈 **Your 30-Day Performance Overview:**\n\n".
+                "| Metric | Value |\n".
+                "|--------|-------|\n".
+                '| Total visits | **'.$totalVisits."** |\n".
+                '| Avg efficiency | **'.round($avgScore, 2)."** |\n".
+                '| High-score visits (≥0.80) | **'.$topVisits."** |\n".
+                '| Open follow-ups | **'.$openLoops."** |\n\n".
+                ($avgScore >= 0.7 ? "🌟 You're performing above average! " : ($avgScore >= 0.5 ? '💪 Room for improvement — focus on high-weight objectives. ' : "📚 Let's build a strategy — try asking \"How can I improve my scores?\" ")).
+                'Keep up the consistent effort!',
             'actions' => [
                 ['label' => 'Dashboard', 'href' => '/dashboard'],
                 ['label' => 'Log a Visit', 'href' => '/visits/create'],

@@ -45,10 +45,10 @@ class VisitObjective extends Model
     public static function scoreForOutcome(string $outcome): float
     {
         return match ($outcome) {
-            'met'           => 1.0,
+            'met' => 1.0,
             'partially_met' => 0.5,
-            'not_met'       => 0.0,
-            default         => 0.0,
+            'not_met' => 0.0,
+            default => 0.0,
         };
     }
 }

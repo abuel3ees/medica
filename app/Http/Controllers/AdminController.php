@@ -8,9 +8,9 @@ use App\Models\DoctorProfile;
 use App\Models\FeatureFlag;
 use App\Models\Medication;
 use App\Models\Notification;
+use App\Models\Objective;
 use App\Models\User;
 use App\Models\Visit;
-use App\Models\Objective;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -60,7 +60,7 @@ class AdminController extends Controller
                 'id' => $log->id,
                 'user' => $log->user ? $log->user->name : 'System',
                 'action' => $log->action,
-                'subject' => $log->subject_type ? class_basename($log->subject_type) . ' #' . $log->subject_id : null,
+                'subject' => $log->subject_type ? class_basename($log->subject_type).' #'.$log->subject_id : null,
                 'properties' => $log->properties,
                 'ip' => $log->ip_address,
                 'time' => $log->created_at->diffForHumans(),
@@ -104,7 +104,7 @@ class AdminController extends Controller
      */
     public function toggleFeatureFlag(Request $request, FeatureFlag $featureFlag): JsonResponse
     {
-        $featureFlag->update(['enabled' => !$featureFlag->enabled]);
+        $featureFlag->update(['enabled' => ! $featureFlag->enabled]);
 
         ActivityLog::log('feature_flag_toggled', $featureFlag, [
             'key' => $featureFlag->key,
@@ -118,7 +118,7 @@ class AdminController extends Controller
                 $admin->id,
                 'feature_flag_toggled',
                 'Feature Flag Changed',
-                "Feature \"{$featureFlag->key}\" was " . ($featureFlag->enabled ? 'enabled' : 'disabled') . " by {$request->user()->name}.",
+                "Feature \"{$featureFlag->key}\" was ".($featureFlag->enabled ? 'enabled' : 'disabled')." by {$request->user()->name}.",
                 ['key' => $featureFlag->key, 'enabled' => $featureFlag->enabled],
                 'toggle-right',
                 'low'
@@ -419,22 +419,25 @@ class AdminController extends Controller
             if (file_exists($path)) {
                 $bytes = filesize($path);
                 if ($bytes >= 1048576) {
-                    return round($bytes / 1048576, 2) . ' MB';
+                    return round($bytes / 1048576, 2).' MB';
                 }
-                return round($bytes / 1024, 2) . ' KB';
+
+                return round($bytes / 1024, 2).' KB';
             }
+
             return 'N/A';
         }
 
         // MySQL / MariaDB
         try {
             $dbName = DB::connection()->getDatabaseName();
-            $result = DB::select("SELECT SUM(data_length + index_length) AS size FROM information_schema.TABLES WHERE table_schema = ?", [$dbName]);
+            $result = DB::select('SELECT SUM(data_length + index_length) AS size FROM information_schema.TABLES WHERE table_schema = ?', [$dbName]);
             $bytes = $result[0]->size ?? 0;
             if ($bytes >= 1048576) {
-                return round($bytes / 1048576, 2) . ' MB';
+                return round($bytes / 1048576, 2).' MB';
             }
-            return round($bytes / 1024, 2) . ' KB';
+
+            return round($bytes / 1024, 2).' KB';
         } catch (\Exception $e) {
             return 'N/A';
         }
@@ -477,8 +480,8 @@ class AdminController extends Controller
             'cache_driver' => config('cache.default'),
             'session_driver' => config('session.driver'),
             'server_os' => PHP_OS,
-            'memory_usage' => round(memory_get_usage(true) / 1048576, 1) . ' MB',
-            'disk_free' => round(disk_free_space(base_path()) / (1024 * 1024 * 1024), 1) . ' GB',
+            'memory_usage' => round(memory_get_usage(true) / 1048576, 1).' MB',
+            'disk_free' => round(disk_free_space(base_path()) / (1024 * 1024 * 1024), 1).' GB',
         ];
     }
 

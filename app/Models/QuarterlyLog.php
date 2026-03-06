@@ -23,8 +23,8 @@ class QuarterlyLog extends Model
     ];
 
     protected $casts = [
-        'details'     => 'array',
-        'reviewed'    => 'boolean',
+        'details' => 'array',
+        'reviewed' => 'boolean',
         'reviewed_at' => 'datetime',
     ];
 
@@ -53,7 +53,8 @@ class QuarterlyLog extends Model
     {
         $month = (int) now()->format('n');
         $q = (int) ceil($month / 3);
-        return now()->format('Y') . '-Q' . $q;
+
+        return now()->format('Y').'-Q'.$q;
     }
 
     /**
@@ -67,14 +68,14 @@ class QuarterlyLog extends Model
         ?array $details = null,
     ): static {
         return static::create([
-            'user_id'      => auth()->id(),
-            'action'       => $action,
+            'user_id' => auth()->id(),
+            'action' => $action,
             'subject_type' => $subject ? get_class($subject) : null,
-            'subject_id'   => $subject?->getKey(),
+            'subject_id' => $subject?->getKey(),
             'subject_name' => $subjectName,
-            'priority'     => $priority,
-            'quarter'      => static::currentQuarter(),
-            'details'      => $details,
+            'priority' => $priority,
+            'quarter' => static::currentQuarter(),
+            'details' => $details,
         ]);
     }
 
@@ -103,7 +104,7 @@ class QuarterlyLog extends Model
     public function markReviewed(?string $notes = null): void
     {
         $this->update([
-            'reviewed'    => true,
+            'reviewed' => true,
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
             'review_notes' => $notes,

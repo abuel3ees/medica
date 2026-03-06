@@ -81,7 +81,7 @@ class MedicationController extends Controller
                 $rep->id,
                 'medication_added',
                 'New Medication Available',
-                "💊 {$medication->name}" . ($medication->generic_name ? " ({$medication->generic_name})" : "") . " has been added to the database. Ask the AI coach for details!",
+                "💊 {$medication->name}".($medication->generic_name ? " ({$medication->generic_name})" : '').' has been added to the database. Ask the AI coach for details!',
                 ['medication_id' => $medication->id, 'name' => $medication->name],
                 'pill',
                 'normal'
@@ -95,7 +95,7 @@ class MedicationController extends Controller
                 $manager->id,
                 'medication_added_team',
                 'New Medication Added',
-                auth()->user()->name . " added 💊 {$medication->name} to the database.",
+                auth()->user()->name." added 💊 {$medication->name} to the database.",
                 ['medication_id' => $medication->id, 'name' => $medication->name],
                 'pill',
                 'normal'
@@ -153,7 +153,7 @@ class MedicationController extends Controller
                 $manager->id,
                 'medication_updated_team',
                 'Medication Updated',
-                auth()->user()->name . " updated 💊 {$medication->name}.",
+                auth()->user()->name." updated 💊 {$medication->name}.",
                 ['medication_id' => $medication->id, 'name' => $medication->name],
                 'edit',
                 'low'
@@ -194,7 +194,7 @@ class MedicationController extends Controller
                 $manager->id,
                 'medication_deleted',
                 'Medication Removed',
-                "💊 {$medName} has been removed from the database by " . auth()->user()->name . ".",
+                "💊 {$medName} has been removed from the database by ".auth()->user()->name.'.',
                 ['name' => $medName],
                 'trash',
                 'normal'
@@ -224,13 +224,13 @@ class MedicationController extends Controller
                 // Extract text operators (Tj, TJ, ')
                 preg_match_all('/\((.*?)\)/s', $decoded, $textMatches);
                 foreach ($textMatches[1] as $t) {
-                    $text .= $t . ' ';
+                    $text .= $t.' ';
                 }
             } else {
                 // Try without decompression
                 preg_match_all('/\((.*?)\)/s', $stream, $textMatches);
                 foreach ($textMatches[1] as $t) {
-                    $text .= $t . ' ';
+                    $text .= $t.' ';
                 }
             }
         }
