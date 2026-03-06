@@ -44,7 +44,7 @@ class HelpController extends Controller
                 'articles' => [
                     [
                         'title' => 'The Formula',
-                        'content' => "Each visit receives an efficiency score calculated as:\n\n**Score = (Weighted Outcome + Progress Bonus) × Difficulty Multiplier ÷ Time Factor × Confidence Adjustment**\n\nThis multi-factor formula ensures that every aspect of a visit—from meeting objectives to managing challenging doctors—is reflected in your performance score.",
+                        'content' => "Each visit receives an efficiency score calculated as:\n\n**Score = [(Weighted Outcome + Progress Bonus) × Difficulty Multiplier ÷ Time Factor] + Cross-Functional Bonus**\n\n*Note: Confidence is always ×1 (no adjustment).*\n\nThis multi-factor formula ensures that every aspect of a visit—from meeting objectives to managing challenging doctors—is reflected in your performance score.",
                     ],
                     [
                         'title' => 'Weighted Outcome',
@@ -60,11 +60,15 @@ class HelpController extends Controller
                     ],
                     [
                         'title' => 'Time Factor',
-                        'content' => "Efficiency means achieving results in reasonable time. The time factor = √(minutes ÷ 15).\n\n- Visits ≤ 15 min: factor = 1.0 (no penalty)\n- 30 min visit: factor = 1.41\n- 60 min visit: factor = 2.0\n\nLonger visits are penalized, but via square root so it's gradual.",
+                        'content' => "When logging a visit, you assess your time goal status. This determines the time factor divisor:\n\n| Time Goal Status | Factor | Effect |\n|-----------------|--------|--------|\n| **Met** | 1.0 | No penalty — you met the time goal |\n| **On Progress** | 1.41 | Moderate divisor — making progress |\n| **Exceeded** | 2.0 | Higher divisor — exceeded time expectations |\n\nA lower factor is better — **Met** gives you the best score. The factor divides your base score, so exceeding the time goal cuts your score in half compared to meeting it.",
                     ],
                     [
-                        'title' => 'Confidence Adjustment',
-                        'content' => "If you self-report your confidence level (0–100%):\n\n- 100% confidence → 1.0× (no adjustment)\n- 50% confidence → 0.925×\n- 0% confidence → 0.85×\n\nThis linearly scales from 0.85 to 1.0. Honest self-assessment is encouraged.",
+                        'title' => 'Cross-Functional Bonus',
+                        'content' => "If the doctor you visited is flagged as needing **cross-functional support** (Marketing, Medical, or Access departments), you receive a flat **+1.0 bonus** added to your final score.\n\nThis rewards the extra coordination effort required when working with multi-department cases. The bonus is applied regardless of other scoring factors.\n\n| Doctor Needs Support? | Bonus |\n|----------------------|-------|\n| Yes | +1.0 |\n| No | +0.0 |",
+                    ],
+                    [
+                        'title' => 'Confidence',
+                        'content' => "Confidence is always **×1** — it does not affect your score. This was simplified to keep the scoring straightforward and focused on objective outcomes rather than self-reported feelings.",
                     ],
                 ],
             ],
@@ -76,7 +80,7 @@ class HelpController extends Controller
                 'articles' => [
                     [
                         'title' => 'Logging a Visit',
-                        'content' => "Navigate to **Log Visit** from the sidebar. The form includes:\n\n1. **Doctor Selection** — Choose from your assigned doctor list\n2. **Visit Date & Time** — When the visit occurred\n3. **Time Spent** — Duration in minutes\n4. **Objectives** — Select the goals for this visit and rate outcomes (Met / Partially Met / Not Met)\n5. **Stance Tracking** — Record the doctor's stance before and after (Resistant / Neutral / Supportive)\n6. **Objection Tags** — Tag any objections encountered\n7. **Notes** — Free-form visit notes\n8. **Next Steps** — Plan concrete follow-up actions\n9. **Confidence** — Your self-assessed confidence (0–100%)",
+                        'content' => "Navigate to **Log Visit** from the sidebar. The form includes:\n\n1. **Doctor Selection** — Choose from your assigned doctor list\n2. **Visit Date & Time** — When the visit occurred\n3. **Time Goal Status** — Did you meet, make progress on, or exceed your time goal? (Met / On Progress / Exceeded)\n4. **Objectives** — Select the goals for this visit and rate outcomes (Met / Partially Met / Not Met)\n5. **Stance Tracking** — Record the doctor's stance before and after (Resistant / Neutral / Supportive)\n6. **Objection Tags** — Tag any objections encountered\n7. **Notes** — Free-form visit notes\n8. **Next Steps** — Plan concrete follow-up actions",
                     ],
                     [
                         'title' => 'Visit Objectives',
@@ -139,8 +143,12 @@ class HelpController extends Controller
                 'description' => 'Understand the different user roles and what they can access.',
                 'articles' => [
                     [
+                        'title' => 'Admin Role',
+                        'content' => "Admins have full system control:\n\n- Everything a Manager can do\n- **Create and delete permissions** in the system\n- **Assign permissions** to individual users\n- Access the **Admin Console** with system-wide settings\n- Manage roles and user access across the platform",
+                    ],
+                    [
                         'title' => 'Manager Role',
-                        'content' => "Managers have full territory oversight:\n\n- View **all reps'** visits, scores, and analytics\n- See the **Rep Leaderboard** with rankings\n- Access **territory-wide** coaching insights\n- View aggregated stats across all reps\n- Monitor doctor relationships across the team\n\nManagers can identify underperforming reps and allocate coaching resources.",
+                        'content' => "Managers have full territory oversight:\n\n- View **all reps'** visits, scores, and analytics\n- See the **Rep Leaderboard** with rankings\n- Access **territory-wide** coaching insights\n- View aggregated stats across all reps\n- Monitor doctor relationships across the team\n- Review **Quarterly Logs** of all activity\n- Receive **notifications** for all logged visits, doctor changes, and medication updates\n\nManagers can identify underperforming reps and allocate coaching resources.",
                     ],
                     [
                         'title' => 'Rep Role',
@@ -156,7 +164,7 @@ class HelpController extends Controller
                 'articles' => [
                     [
                         'title' => 'Doctor Profiles',
-                        'content' => "Each doctor has a detailed profile with:\n\n- **Name & Specialty**: Basic identification\n- **Institution & Location**: Where they practice\n- **Segment** (A/B/C): Priority tier (A = highest priority)\n- **Stance**: Current relationship status (Supportive / Neutral / Resistant)\n- **Access Difficulty**: How hard it is to get a meeting (Easy / Moderate / Hard)\n\nThese attributes influence your efficiency score calculations.",
+                        'content' => "Each doctor has a detailed profile with:\n\n- **Name & Specialty**: Basic identification\n- **Institution & Location**: Where they practice\n- **Segment** (A/B/C): Priority tier (A = highest priority)\n- **Stance**: Current relationship status (Supportive / Neutral / Resistant)\n- **Access Difficulty**: How hard it is to get a meeting (Easy / Moderate / Hard)\n- **Cross-Functional Support**: Whether this doctor requires support from Marketing, Medical, or Access departments — visiting these doctors earns a **+1.0 bonus**\n\nThese attributes influence your efficiency score calculations.",
                     ],
                     [
                         'title' => 'Segments Explained',
