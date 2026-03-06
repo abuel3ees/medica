@@ -4,6 +4,9 @@
 /public/build
 /public/hot
 /public/storage
+/public/videos/*.mp4
+/public/videos/*.webm
+/public/videos/*.mov
 /storage/*.key
 /storage/pail
 /resources/js/actions
