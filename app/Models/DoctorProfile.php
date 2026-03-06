@@ -31,7 +31,7 @@ class DoctorProfile extends Model
     {
         return [
             'difficulty_multiplier' => 'decimal:2',
-            'years_of_experience'  => 'integer',
+            'years_of_experience' => 'integer',
             'needs_cross_functional_support' => 'boolean',
         ];
     }
@@ -67,7 +67,7 @@ class DoctorProfile extends Model
      */
     public function getDisplayNameAttribute(): string
     {
-        return 'Dr. ' . ($this->user->name ?? 'Unknown');
+        return 'Dr. '.($this->user->name ?? 'Unknown');
     }
 
     /**
@@ -76,9 +76,9 @@ class DoctorProfile extends Model
     public static function difficultyMultiplierFor(string $difficulty): float
     {
         return match ($difficulty) {
-            'C'     => 0.90,
-            'B'     => 1.00,
-            'A'     => 1.15,
+            'C' => 0.90,
+            'B' => 1.00,
+            'A' => 1.15,
             default => 1.00,
         };
     }

@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\DoctorProfile;
 use App\Models\Visit;
-use App\Models\VisitObjective;
 use Illuminate\Support\Collection;
 
 class EfficiencyScoreService
@@ -46,11 +45,11 @@ class EfficiencyScoreService
 
         // Persist cached scores
         $visit->update([
-            'raw_outcome_score'    => round($rawOutcome, 3),
-            'progress_bonus'       => round($progressBonus, 3),
+            'raw_outcome_score' => round($rawOutcome, 3),
+            'progress_bonus' => round($progressBonus, 3),
             'difficulty_multiplier' => round($difficultyMultiplier, 2),
-            'time_factor'          => round($timeFactor, 3),
-            'efficiency_score'     => $score,
+            'time_factor' => round($timeFactor, 3),
+            'efficiency_score' => $score,
         ]);
 
         return $score;
@@ -146,10 +145,10 @@ class EfficiencyScoreService
     {
         if ($timeGoalStatus) {
             return match ($timeGoalStatus) {
-                'met'         => 1.0,
+                'met' => 1.0,
                 'on_progress' => 1.41,
-                'exceeded'    => 2.0,
-                default       => 1.0,
+                'exceeded' => 2.0,
+                default => 1.0,
             };
         }
 

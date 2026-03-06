@@ -21,12 +21,12 @@ class ObjectiveController extends Controller
             ->orderBy('name')
             ->get()
             ->map(fn ($obj) => [
-                'id'         => $obj->id,
-                'name'       => $obj->name,
-                'category'   => $obj->category,
+                'id' => $obj->id,
+                'name' => $obj->name,
+                'category' => $obj->category,
                 'importance' => $obj->importance,
-                'weight'     => (float) $obj->weight,
-                'is_active'  => $obj->is_active,
+                'weight' => (float) $obj->weight,
+                'is_active' => $obj->is_active,
                 'usage_count' => $obj->visit_objectives_count,
             ]);
 
@@ -41,11 +41,11 @@ class ObjectiveController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'       => ['required', 'string', 'max:255', 'unique:objectives,name'],
-            'category'   => ['nullable', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:255', 'unique:objectives,name'],
+            'category' => ['nullable', 'string', 'max:100'],
             'importance' => ['required', 'in:high,standard,low'],
-            'weight'     => ['required', 'numeric', 'min:0.1', 'max:5.0'],
-            'is_active'  => ['boolean'],
+            'weight' => ['required', 'numeric', 'min:0.1', 'max:5.0'],
+            'is_active' => ['boolean'],
         ]);
 
         Objective::create($validated);
@@ -64,11 +64,11 @@ class ObjectiveController extends Controller
     public function update(Request $request, Objective $objective): RedirectResponse
     {
         $validated = $request->validate([
-            'name'       => ['required', 'string', 'max:255', 'unique:objectives,name,' . $objective->id],
-            'category'   => ['nullable', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:255', 'unique:objectives,name,'.$objective->id],
+            'category' => ['nullable', 'string', 'max:100'],
             'importance' => ['required', 'in:high,standard,low'],
-            'weight'     => ['required', 'numeric', 'min:0.1', 'max:5.0'],
-            'is_active'  => ['boolean'],
+            'weight' => ['required', 'numeric', 'min:0.1', 'max:5.0'],
+            'is_active' => ['boolean'],
         ]);
 
         $objective->update($validated);

@@ -51,10 +51,10 @@ class Objective extends Model
     public static function weightForImportance(string $importance): float
     {
         return match ($importance) {
-            'high'     => 1.30,
+            'high' => 1.30,
             'standard' => 1.00,
-            'low'      => 0.70,
-            default    => 1.00,
+            'low' => 0.70,
+            default => 1.00,
         };
     }
 }

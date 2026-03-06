@@ -29,17 +29,17 @@ class DashboardController extends Controller
         $isManager = $user->hasPermissionTo('view team dashboard');
 
         return Inertia::render('dashboard/dashboard', [
-            'stats'                => $this->getStats($days, $user, $isManager),
-            'repScores'            => $isManager ? $this->getRepScores($days) : [],
-            'recentVisits'         => $this->getRecentVisits(8, $user, $isManager),
-            'efficiencyTrend'      => $this->getEfficiencyTrend($user, $isManager),
-            'visitTrend'           => $this->getVisitTrend($user, $isManager),
-            'heatmapData'          => $this->getHeatmapData($user, $isManager),
-            'topDoctors'           => $this->getTopDoctors(5, $user, $isManager),
-            'coachingInsights'     => $this->getCoachingInsights($days, $user, $isManager),
-            'outcomeDistribution'  => $this->getOutcomeDistribution($days, $user, $isManager),
-            'dailyVisits'          => $this->getDailyVisits($user, $isManager),
-            'goalProgress'         => $this->getGoalProgress($days, $user, $isManager),
+            'stats' => $this->getStats($days, $user, $isManager),
+            'repScores' => $isManager ? $this->getRepScores($days) : [],
+            'recentVisits' => $this->getRecentVisits(8, $user, $isManager),
+            'efficiencyTrend' => $this->getEfficiencyTrend($user, $isManager),
+            'visitTrend' => $this->getVisitTrend($user, $isManager),
+            'heatmapData' => $this->getHeatmapData($user, $isManager),
+            'topDoctors' => $this->getTopDoctors(5, $user, $isManager),
+            'coachingInsights' => $this->getCoachingInsights($days, $user, $isManager),
+            'outcomeDistribution' => $this->getOutcomeDistribution($days, $user, $isManager),
+            'dailyVisits' => $this->getDailyVisits($user, $isManager),
+            'goalProgress' => $this->getGoalProgress($days, $user, $isManager),
         ]);
     }
 
@@ -52,7 +52,7 @@ class DashboardController extends Controller
         $prevQuery = Visit::where('visit_date', '>=', now()->subDays($days * 2))
             ->where('visit_date', '<', now()->subDays($days));
 
-        if (!$isManager) {
+        if (! $isManager) {
             $currentQuery->where('rep_id', $user->id);
             $prevQuery->where('rep_id', $user->id);
         }
@@ -65,13 +65,13 @@ class DashboardController extends Controller
             : 0;
 
         $avgEfficiency = Visit::recent($days)
-            ->when(!$isManager, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager, fn ($q) => $q->where('rep_id', $user->id))
             ->whereNotNull('efficiency_score')
             ->avg('efficiency_score') ?? 0;
 
         $prevAvgEfficiency = Visit::where('visit_date', '>=', now()->subDays($days * 2))
             ->where('visit_date', '<', now()->subDays($days))
-            ->when(!$isManager, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager, fn ($q) => $q->where('rep_id', $user->id))
             ->whereNotNull('efficiency_score')
             ->avg('efficiency_score') ?? 0;
 
@@ -80,24 +80,25 @@ class DashboardController extends Controller
             : 0;
 
         $avgTime = Visit::recent($days)
-            ->when(!$isManager, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager, fn ($q) => $q->where('rep_id', $user->id))
             ->whereNotNull('time_spent_minutes')
             ->avg('time_spent_minutes') ?? 0;
 
         if ($isManager) {
             $activeReps = Visit::recent($days)->distinct('rep_id')->count('rep_id');
+
             return [
-                ['label' => 'Total Visits', 'value' => number_format($currentVisits), 'change' => ($visitChange >= 0 ? '+' : '') . $visitChange . '%', 'up' => $visitChange >= 0],
-                ['label' => 'Active Reps', 'value' => (string) $activeReps, 'change' => '+' . $activeReps, 'up' => true],
-                ['label' => 'Avg Efficiency', 'value' => number_format($avgEfficiency * 100, 1), 'change' => ($efficiencyChange >= 0 ? '+' : '') . number_format($efficiencyChange * 100, 1), 'up' => $efficiencyChange >= 0],
-                ['label' => 'Avg Visit Time', 'value' => round($avgTime) . 'm', 'change' => '-' . round($avgTime) . 'm', 'up' => true],
+                ['label' => 'Total Visits', 'value' => number_format($currentVisits), 'change' => ($visitChange >= 0 ? '+' : '').$visitChange.'%', 'up' => $visitChange >= 0],
+                ['label' => 'Active Reps', 'value' => (string) $activeReps, 'change' => '+'.$activeReps, 'up' => true],
+                ['label' => 'Avg Efficiency', 'value' => number_format($avgEfficiency * 100, 1), 'change' => ($efficiencyChange >= 0 ? '+' : '').number_format($efficiencyChange * 100, 1), 'up' => $efficiencyChange >= 0],
+                ['label' => 'Avg Visit Time', 'value' => round($avgTime).'m', 'change' => '-'.round($avgTime).'m', 'up' => true],
             ];
         }
 
         return [
-            ['label' => 'My Visits', 'value' => number_format($currentVisits), 'change' => ($visitChange >= 0 ? '+' : '') . $visitChange . '%', 'up' => $visitChange >= 0],
-            ['label' => 'My Efficiency', 'value' => number_format($avgEfficiency * 100, 1), 'change' => ($efficiencyChange >= 0 ? '+' : '') . number_format($efficiencyChange * 100, 1), 'up' => $efficiencyChange >= 0],
-            ['label' => 'Avg Visit Time', 'value' => round($avgTime) . 'm', 'change' => '-' . round($avgTime) . 'm', 'up' => true],
+            ['label' => 'My Visits', 'value' => number_format($currentVisits), 'change' => ($visitChange >= 0 ? '+' : '').$visitChange.'%', 'up' => $visitChange >= 0],
+            ['label' => 'My Efficiency', 'value' => number_format($avgEfficiency * 100, 1), 'change' => ($efficiencyChange >= 0 ? '+' : '').number_format($efficiencyChange * 100, 1), 'up' => $efficiencyChange >= 0],
+            ['label' => 'Avg Visit Time', 'value' => round($avgTime).'m', 'change' => '-'.round($avgTime).'m', 'up' => true],
             ['label' => 'Doctors Seen', 'value' => (string) Visit::recent($days)->where('rep_id', $user->id)->distinct('doctor_profile_id')->count('doctor_profile_id'), 'change' => '+0', 'up' => true],
         ];
     }
@@ -126,11 +127,11 @@ class DashboardController extends Controller
                 : 0;
 
             return [
-                'name'      => $rep->name,
-                'score'     => round($score * 100, 1),
-                'visits'    => $rep->recent_visits,
-                'change'    => $change,
-                'trend'     => $change > 0.5 ? 'up' : ($change < -0.5 ? 'down' : 'flat'),
+                'name' => $rep->name,
+                'score' => round($score * 100, 1),
+                'visits' => $rep->recent_visits,
+                'change' => $change,
+                'trend' => $change > 0.5 ? 'up' : ($change < -0.5 ? 'down' : 'flat'),
             ];
         })
             ->sortByDesc('score')
@@ -148,17 +149,17 @@ class DashboardController extends Controller
             'doctorProfile.user:id,name',
             'visitObjectives',
         ])
-            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get()
             ->map(fn ($visit) => [
-                'doctor'    => $visit->doctorProfile?->display_name,
+                'doctor' => $visit->doctorProfile?->display_name,
                 'specialty' => $visit->doctorProfile?->specialty,
-                'rep'       => $visit->rep?->name,
-                'outcome'   => $this->overallOutcome($visit),
-                'time'      => $visit->created_at->diffForHumans(),
-                'score'     => $visit->efficiency_score,
+                'rep' => $visit->rep?->name,
+                'outcome' => $this->overallOutcome($visit),
+                'time' => $visit->created_at->diffForHumans(),
+                'score' => $visit->efficiency_score,
             ])
             ->toArray();
     }
@@ -175,20 +176,20 @@ class DashboardController extends Controller
             $monthEnd = $date->copy()->endOfMonth();
 
             $avgScore = Visit::whereBetween('visit_date', [$monthStart, $monthEnd])
-                ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+                ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
                 ->whereNotNull('efficiency_score')
                 ->avg('efficiency_score') ?? 0;
 
             // Top performer
             $topScore = Visit::whereBetween('visit_date', [$monthStart, $monthEnd])
-                ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+                ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
                 ->whereNotNull('efficiency_score')
                 ->max('efficiency_score') ?? 0;
 
             $months->push([
                 'month' => $date->format('M'),
-                'avg'   => round($avgScore * 100, 1),
-                'top'   => round($topScore * 100, 1),
+                'avg' => round($avgScore * 100, 1),
+                'top' => round($topScore * 100, 1),
             ]);
         }
 
@@ -207,17 +208,17 @@ class DashboardController extends Controller
             $monthEnd = $date->copy()->endOfMonth();
 
             $totalVisits = Visit::whereBetween('visit_date', [$monthStart, $monthEnd])
-                ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+                ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
                 ->count();
 
             $positiveOutcomes = Visit::whereBetween('visit_date', [$monthStart, $monthEnd])
-                ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+                ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
                 ->whereHas('visitObjectives', fn ($q) => $q->where('outcome', 'met'))
                 ->count();
 
             $months->push([
-                'month'    => $date->format('M'),
-                'visits'   => $totalVisits,
+                'month' => $date->format('M'),
+                'visits' => $totalVisits,
                 'outcomes' => $positiveOutcomes,
             ]);
         }
@@ -242,11 +243,11 @@ class DashboardController extends Controller
         } else {
             // MySQL: DAYOFWEEK() returns 1=Sunday, 2=Monday, ..., 7=Saturday
             // Subtract 1 to align with SQLite's 0-based numbering
-            $dowExpr = "(DAYOFWEEK(visit_date) - 1)";
+            $dowExpr = '(DAYOFWEEK(visit_date) - 1)';
         }
 
         $visits = Visit::recent(90)
-            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
             ->select(DB::raw("{$dowExpr} as dow"), DB::raw('count(*) as cnt'))
             ->groupBy('dow')
             ->pluck('cnt', 'dow')
@@ -260,7 +261,7 @@ class DashboardController extends Controller
             $count = $visits[$dow] ?? 0;
             // Normalize to 0-5 scale
             $data[] = [
-                'day'   => $day,
+                'day' => $day,
                 'count' => $count,
                 'level' => $maxCount > 0 ? min(5, (int) round(($count / $maxCount) * 5)) : 0,
             ];
@@ -277,7 +278,7 @@ class DashboardController extends Controller
         return DoctorProfile::with('user:id,name')
             ->withCount(['visits' => function ($q) use ($user, $isManager) {
                 $q->recent(90);
-                if (!$isManager && $user) {
+                if (! $isManager && $user) {
                     $q->where('rep_id', $user->id);
                 }
             }])
@@ -285,9 +286,9 @@ class DashboardController extends Controller
             ->limit($limit)
             ->get()
             ->map(fn ($doc) => [
-                'name'      => $doc->display_name,
+                'name' => $doc->display_name,
                 'specialty' => $doc->specialty,
-                'visits'    => $doc->visits_count,
+                'visits' => $doc->visits_count,
             ])
             ->toArray();
     }
@@ -302,7 +303,7 @@ class DashboardController extends Controller
         // Check for high partials, low closures
         $totalObjectives = VisitObjective::whereHas('visit', function ($q) use ($days, $user, $isManager) {
             $q->recent($days);
-            if (!$isManager && $user) {
+            if (! $isManager && $user) {
                 $q->where('rep_id', $user->id);
             }
         })->count();
@@ -310,7 +311,7 @@ class DashboardController extends Controller
             $partials = VisitObjective::where('outcome', 'partially_met')
                 ->whereHas('visit', function ($q) use ($days, $user, $isManager) {
                     $q->recent($days);
-                    if (!$isManager && $user) {
+                    if (! $isManager && $user) {
                         $q->where('rep_id', $user->id);
                     }
                 })
@@ -318,7 +319,7 @@ class DashboardController extends Controller
             $mets = VisitObjective::where('outcome', 'met')
                 ->whereHas('visit', function ($q) use ($days, $user, $isManager) {
                     $q->recent($days);
-                    if (!$isManager && $user) {
+                    if (! $isManager && $user) {
                         $q->where('rep_id', $user->id);
                     }
                 })
@@ -329,55 +330,55 @@ class DashboardController extends Controller
 
             if ($partialRate > 0.35 && $metRate < 0.40) {
                 $insights[] = [
-                    'type'    => 'warning',
-                    'title'   => 'High partials, low closures',
-                    'message' => 'Partial outcomes are at ' . round($partialRate * 100) . '% while full met is only ' . round($metRate * 100) . '%. Focus on next-step discipline to close loops.',
+                    'type' => 'warning',
+                    'title' => 'High partials, low closures',
+                    'message' => 'Partial outcomes are at '.round($partialRate * 100).'% while full met is only '.round($metRate * 100).'%. Focus on next-step discipline to close loops.',
                 ];
             }
         }
 
         // Check if C-tier accounts dominate good scores
         $cTierScore = Visit::recent($days)
-            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
             ->where('access_difficulty', 'C')
             ->whereNotNull('efficiency_score')
             ->avg('efficiency_score') ?? 0;
 
         $aTierScore = Visit::recent($days)
-            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
             ->where('access_difficulty', 'A')
             ->whereNotNull('efficiency_score')
             ->avg('efficiency_score') ?? 0;
 
         if ($cTierScore > 0 && $aTierScore > 0 && $cTierScore > $aTierScore * 1.5) {
             $insights[] = [
-                'type'    => 'info',
-                'title'   => 'C-tier account dominance',
-                'message' => 'Strong performance on C-tier accounts (' . round($cTierScore * 100, 1) . ') but A-tier accounts lag (' . round($aTierScore * 100, 1) . '). Build strategies for high-difficulty accounts.',
+                'type' => 'info',
+                'title' => 'C-tier account dominance',
+                'message' => 'Strong performance on C-tier accounts ('.round($cTierScore * 100, 1).') but A-tier accounts lag ('.round($aTierScore * 100, 1).'). Build strategies for high-difficulty accounts.',
             ];
         }
 
         // Open loops reminder
         $openLoops = NextStep::open()->whereHas('visit', function ($q) use ($days, $user, $isManager) {
             $q->recent($days * 2);
-            if (!$isManager && $user) {
+            if (! $isManager && $user) {
                 $q->where('rep_id', $user->id);
             }
         })->count();
         if ($openLoops > 5) {
             $overdueCount = NextStep::overdue()->count();
             $insights[] = [
-                'type'    => 'action',
-                'title'   => $openLoops . ' open follow-ups',
-                'message' => $overdueCount . ' are overdue. Closing loops improves efficiency scores by up to +0.10 per visit.',
+                'type' => 'action',
+                'title' => $openLoops.' open follow-ups',
+                'message' => $overdueCount.' are overdue. Closing loops improves efficiency scores by up to +0.10 per visit.',
             ];
         }
 
         // Default insight if none
         if (empty($insights)) {
             $insights[] = [
-                'type'    => 'success',
-                'title'   => 'On track',
+                'type' => 'success',
+                'title' => 'On track',
                 'message' => 'No major issues detected. Keep up the good work and focus on maintaining consistency.',
             ];
         }
@@ -391,7 +392,7 @@ class DashboardController extends Controller
     private function getOutcomeDistribution(int $days, $user, bool $isManager): array
     {
         $visits = Visit::recent($days)
-            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
             ->with('visitObjectives')
             ->get();
 
@@ -401,9 +402,13 @@ class DashboardController extends Controller
 
         foreach ($visits as $visit) {
             $outcome = $this->overallOutcome($visit);
-            if ($outcome === 'Positive') $positive++;
-            elseif ($outcome === 'Negative') $negative++;
-            else $neutral++;
+            if ($outcome === 'Positive') {
+                $positive++;
+            } elseif ($outcome === 'Negative') {
+                $negative++;
+            } else {
+                $neutral++;
+            }
         }
 
         return [
@@ -423,12 +428,12 @@ class DashboardController extends Controller
         for ($i = 13; $i >= 0; $i--) {
             $date = now()->subDays($i);
             $count = Visit::whereDate('visit_date', $date->toDateString())
-                ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+                ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
                 ->count();
 
             $data[] = [
-                'date'   => $date->format('M d'),
-                'day'    => $date->format('D'),
+                'date' => $date->format('M d'),
+                'day' => $date->format('D'),
                 'visits' => $count,
             ];
         }
@@ -445,38 +450,38 @@ class DashboardController extends Controller
         $weekEnd = now()->endOfWeek();
 
         $weeklyVisits = Visit::whereBetween('visit_date', [$weekStart, $weekEnd])
-            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
             ->count();
 
         $weeklyTarget = $isManager ? 50 : 15; // Target visits per week
 
         $avgScore = Visit::whereBetween('visit_date', [$weekStart, $weekEnd])
-            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
             ->whereNotNull('efficiency_score')
             ->avg('efficiency_score') ?? 0;
 
         $uniqueDoctors = Visit::whereBetween('visit_date', [$weekStart, $weekEnd])
-            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
             ->distinct('doctor_profile_id')
             ->count('doctor_profile_id');
 
         $doctorTarget = $isManager ? 20 : 8;
 
         $positiveOutcomes = Visit::whereBetween('visit_date', [$weekStart, $weekEnd])
-            ->when(!$isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
+            ->when(! $isManager && $user, fn ($q) => $q->where('rep_id', $user->id))
             ->whereHas('visitObjectives', fn ($q) => $q->where('outcome', 'met'))
             ->count();
 
         $positiveTarget = $isManager ? 30 : 10;
 
         return [
-            'weeklyVisits'    => $weeklyVisits,
-            'weeklyTarget'    => $weeklyTarget,
-            'avgScore'        => round($avgScore * 100, 1),
-            'uniqueDoctors'   => $uniqueDoctors,
-            'doctorTarget'    => $doctorTarget,
+            'weeklyVisits' => $weeklyVisits,
+            'weeklyTarget' => $weeklyTarget,
+            'avgScore' => round($avgScore * 100, 1),
+            'uniqueDoctors' => $uniqueDoctors,
+            'doctorTarget' => $doctorTarget,
             'positiveOutcomes' => $positiveOutcomes,
-            'positiveTarget'  => $positiveTarget,
+            'positiveTarget' => $positiveTarget,
         ];
     }
 

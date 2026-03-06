@@ -35,14 +35,14 @@ class Visit extends Model
     protected function casts(): array
     {
         return [
-            'visit_date'           => 'date',
-            'time_spent_minutes'   => 'integer',
-            'confidence'           => 'integer',
-            'efficiency_score'     => 'decimal:3',
-            'raw_outcome_score'    => 'decimal:3',
-            'progress_bonus'       => 'decimal:3',
+            'visit_date' => 'date',
+            'time_spent_minutes' => 'integer',
+            'confidence' => 'integer',
+            'efficiency_score' => 'decimal:3',
+            'raw_outcome_score' => 'decimal:3',
+            'progress_bonus' => 'decimal:3',
             'difficulty_multiplier' => 'decimal:2',
-            'time_factor'          => 'decimal:3',
+            'time_factor' => 'decimal:3',
         ];
     }
 
@@ -93,10 +93,10 @@ class Visit extends Model
     {
         return match ($this->visit_type) {
             'in_person' => 'In-Person',
-            'call'      => 'Call',
-            'event'     => 'Event',
+            'call' => 'Call',
+            'event' => 'Event',
             'follow_up' => 'Follow-Up',
-            default     => ucfirst(str_replace('_', ' ', $this->visit_type)),
+            default => ucfirst(str_replace('_', ' ', $this->visit_type)),
         };
     }
 
