@@ -481,6 +481,7 @@ class VisitController extends Controller
             'avg_score'       => round($avgScore, 2),
             'trend'           => $this->determineTrend($recentVisits),
             'open_loops'      => $doctor->openLoops()->count(),
+            'needs_cross_functional_support' => (bool) $doctor->needs_cross_functional_support,
         ];
     }
 

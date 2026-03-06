@@ -86,6 +86,7 @@ export type DoctorContext = {
   avg_score: number
   trend: string
   open_loops: number
+  needs_cross_functional_support?: boolean
 }
 
 // Visit

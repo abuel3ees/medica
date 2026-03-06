@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { DoctorContext, VisitFormData, Objective } from "@/types"
 
-function computePreviewScore(data: VisitFormData, objectives: Objective[]): number {
+function computePreviewScore(data: VisitFormData, objectives: Objective[], doctorContext: DoctorContext | null): number {
   if (data.objectives.length === 0) return 0
 
   // Weighted outcome
@@ -31,7 +31,10 @@ function computePreviewScore(data: VisitFormData, objectives: Objective[]): numb
   // Confidence is now always x1
   const confAdj = 1.0
 
-  return Number(((rawOutcome * diffMult / timeFactor) * confAdj).toFixed(3))
+  // Cross-functional bonus: +1.0 when doctor needs it
+  const crossFunctionalBonus = doctorContext?.needs_cross_functional_support ? 1.0 : 0
+
+  return Number((((rawOutcome * diffMult / timeFactor) * confAdj) + crossFunctionalBonus).toFixed(3))
 }
 
 export function EfficiencyPreview({
@@ -43,7 +46,7 @@ export function EfficiencyPreview({
   objectives: Objective[]
   doctorContext: DoctorContext | null
 }) {
-  const previewScore = computePreviewScore(formData, objectives)
+  const previewScore = computePreviewScore(formData, objectives, doctorContext)
 
   return (
     <div className="flex flex-col gap-4">
@@ -80,6 +83,12 @@ export function EfficiencyPreview({
                   <span className="text-muted-foreground">Time Spent</span>
                   <span className="text-foreground">{formData.time_spent_minutes ?? "—"}m</span>
                 </div>
+                {doctorContext?.needs_cross_functional_support && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Cross-Functional</span>
+                    <span className="font-semibold text-green-500">+1.0 bonus</span>
+                  </div>
+                )}
                 <div className="mt-2 border-t border-border pt-2">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-foreground">Efficiency Score</span>
@@ -91,8 +100,8 @@ export function EfficiencyPreview({
 
             {/* Formula explanation */}
             <div className="rounded-md bg-secondary/20 px-3 py-2 text-[10px] text-muted-foreground">
-              <p>Score = (Σ(Outcome × Weight) / ΣWeight + Bonus) × DifficultyMult ÷ TimeFactor</p>
-              <p className="mt-1">Time: Met=×1 · On Progress=×1.41 · Exceeded=×2 · Confidence=×1</p>
+              <p>Score = (Σ(Outcome × Weight) / ΣWeight + Bonus) × DifficultyMult ÷ TimeFactor + CrossFunctional</p>
+              <p className="mt-1">Time: Met=×1 · On Progress=×1.41 · Exceeded=×2 · Cross-Functional=+1</p>
             </div>
           </div>
         </CardContent>

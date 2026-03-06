@@ -35,8 +35,11 @@ class EfficiencyScoreService
         // 5. Confidence adjustment (optional – reduce score slightly when unsure)
         $confidenceAdjustment = $this->computeConfidenceAdjustment($visit->confidence);
 
+        // 6. Cross-functional support bonus (+1.0 when doctor needs it)
+        $crossFunctionalBonus = $this->computeCrossFunctionalBonus($visit);
+
         // Final score
-        $score = (($rawOutcome + $progressBonus) * $difficultyMultiplier / $timeFactor) * $confidenceAdjustment;
+        $score = (($rawOutcome + $progressBonus) * $difficultyMultiplier / $timeFactor) * $confidenceAdjustment + $crossFunctionalBonus;
 
         // Clamp to 0…2.0 reasonable range (normalized)
         $score = max(0, round($score, 3));
@@ -161,6 +164,21 @@ class EfficiencyScoreService
     {
         // Confidence is now always x1
         return 1.0;
+    }
+
+    /**
+     * Cross-functional support bonus: +1.0 when the doctor needs cross-functional support.
+     * Rewards reps for handling complex multi-department coordination.
+     */
+    protected function computeCrossFunctionalBonus(Visit $visit): float
+    {
+        $doctor = $visit->doctorProfile;
+
+        if ($doctor && $doctor->needs_cross_functional_support) {
+            return 1.0;
+        }
+
+        return 0;
     }
 
     // -----------------------------------------------------------
