@@ -25,6 +25,7 @@ class FeatureFlag extends Model
     public static function isEnabled(string $key): bool
     {
         $flag = static::where('key', $key)->first();
+
         return $flag ? $flag->enabled : false;
     }
 
@@ -35,9 +36,11 @@ class FeatureFlag extends Model
     {
         $flag = static::where('key', $key)->first();
         if ($flag) {
-            $flag->update(['enabled' => !$flag->enabled]);
+            $flag->update(['enabled' => ! $flag->enabled]);
+
             return $flag->enabled;
         }
+
         return false;
     }
 }

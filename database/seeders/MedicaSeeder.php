@@ -7,8 +7,8 @@ use App\Models\FeatureFlag;
 use App\Models\Medication;
 use App\Models\NextStep;
 use App\Models\Notification;
-use App\Models\Objective;
 use App\Models\ObjectionTag;
+use App\Models\Objective;
 use App\Models\User;
 use App\Models\Visit;
 use App\Models\VisitObjective;
@@ -68,18 +68,18 @@ class MedicaSeeder extends Seeder
 
         // ─── Admin User ─────────────────────────────────────────
         $admin = User::factory()->create([
-            'name'  => 'Dev Admin',
+            'name' => 'Dev Admin',
             'email' => 'admin@medica.test',
-            'role'  => 'admin',
+            'role' => 'admin',
             'onboarding_completed' => true,
         ]);
         $admin->assignRole('admin');
 
         // ─── Manager User ───────────────────────────────────────
         $manager = User::factory()->create([
-            'name'  => 'Sarah Manager',
+            'name' => 'Sarah Manager',
             'email' => 'manager@medica.test',
-            'role'  => 'manager',
+            'role' => 'manager',
             'onboarding_completed' => true,
         ]);
         $manager->assignRole('manager');
@@ -92,60 +92,61 @@ class MedicaSeeder extends Seeder
         ])->map(function ($r) {
             $user = User::factory()->create(array_merge($r, ['role' => 'rep']));
             $user->assignRole('rep');
+
             return $user;
         });
 
         // ─── Sample Medications ─────────────────────────────────
         $medications = [
             [
-                'name'              => 'Atorvastatin (Lipitor)',
-                'generic_name'      => 'Atorvastatin Calcium',
-                'description'       => 'HMG-CoA reductase inhibitor (statin) used to lower cholesterol and reduce the risk of cardiovascular disease.',
-                'indications'       => 'Primary hyperlipidemia, mixed dyslipidemia, prevention of cardiovascular disease in high-risk patients.',
-                'dosage'            => 'Tablets: 10mg, 20mg, 40mg, 80mg. Taken once daily with or without food.',
-                'side_effects'      => 'Common: myalgia, arthralgia, nasopharyngitis, diarrhea. Rare: rhabdomyolysis, hepatotoxicity.',
+                'name' => 'Atorvastatin (Lipitor)',
+                'generic_name' => 'Atorvastatin Calcium',
+                'description' => 'HMG-CoA reductase inhibitor (statin) used to lower cholesterol and reduce the risk of cardiovascular disease.',
+                'indications' => 'Primary hyperlipidemia, mixed dyslipidemia, prevention of cardiovascular disease in high-risk patients.',
+                'dosage' => 'Tablets: 10mg, 20mg, 40mg, 80mg. Taken once daily with or without food.',
+                'side_effects' => 'Common: myalgia, arthralgia, nasopharyngitis, diarrhea. Rare: rhabdomyolysis, hepatotoxicity.',
                 'contraindications' => 'CYP3A4 inhibitors (clarithromycin, itraconazole), gemfibrozil, niacin, cyclosporine. Avoid grapefruit juice in large amounts.',
-                'uploaded_by'       => $admin->id,
+                'uploaded_by' => $admin->id,
             ],
             [
-                'name'              => 'Metformin (Glucophage)',
-                'generic_name'      => 'Metformin Hydrochloride',
-                'description'       => 'Biguanide antidiabetic agent used as first-line therapy for type 2 diabetes mellitus.',
-                'indications'       => 'Type 2 diabetes mellitus as monotherapy or in combination with other antidiabetic agents, including insulin.',
-                'dosage'            => 'Tablets: 500mg, 850mg, 1000mg. Extended-release: 500mg, 750mg, 1000mg. Taken with meals.',
-                'side_effects'      => 'Common: nausea, vomiting, diarrhea, flatulence, abdominal discomfort. Rare: lactic acidosis, vitamin B12 deficiency.',
+                'name' => 'Metformin (Glucophage)',
+                'generic_name' => 'Metformin Hydrochloride',
+                'description' => 'Biguanide antidiabetic agent used as first-line therapy for type 2 diabetes mellitus.',
+                'indications' => 'Type 2 diabetes mellitus as monotherapy or in combination with other antidiabetic agents, including insulin.',
+                'dosage' => 'Tablets: 500mg, 850mg, 1000mg. Extended-release: 500mg, 750mg, 1000mg. Taken with meals.',
+                'side_effects' => 'Common: nausea, vomiting, diarrhea, flatulence, abdominal discomfort. Rare: lactic acidosis, vitamin B12 deficiency.',
                 'contraindications' => 'Iodinated contrast agents, alcohol, carbonic anhydrase inhibitors, cimetidine. Monitor renal function.',
-                'uploaded_by'       => $admin->id,
+                'uploaded_by' => $admin->id,
             ],
             [
-                'name'              => 'Amlodipine (Norvasc)',
-                'generic_name'      => 'Amlodipine Besylate',
-                'description'       => 'Calcium channel blocker used to treat high blood pressure and angina.',
-                'indications'       => 'Hypertension, chronic stable angina, confirmed or suspected vasospastic angina.',
-                'dosage'            => 'Tablets: 2.5mg, 5mg, 10mg. Taken once daily.',
-                'side_effects'      => 'Common: peripheral edema, dizziness, flushing, palpitations. Rare: hypotension, hepatitis.',
+                'name' => 'Amlodipine (Norvasc)',
+                'generic_name' => 'Amlodipine Besylate',
+                'description' => 'Calcium channel blocker used to treat high blood pressure and angina.',
+                'indications' => 'Hypertension, chronic stable angina, confirmed or suspected vasospastic angina.',
+                'dosage' => 'Tablets: 2.5mg, 5mg, 10mg. Taken once daily.',
+                'side_effects' => 'Common: peripheral edema, dizziness, flushing, palpitations. Rare: hypotension, hepatitis.',
                 'contraindications' => 'CYP3A4 inhibitors/inducers, simvastatin (limit dose), cyclosporine, tacrolimus.',
-                'uploaded_by'       => $admin->id,
+                'uploaded_by' => $admin->id,
             ],
             [
-                'name'              => 'Omeprazole (Prilosec)',
-                'generic_name'      => 'Omeprazole',
-                'description'       => 'Proton pump inhibitor (PPI) used to reduce gastric acid production.',
-                'indications'       => 'GERD, erosive esophagitis, duodenal ulcers, H. pylori eradication (with antibiotics), Zollinger-Ellison syndrome.',
-                'dosage'            => 'Capsules: 10mg, 20mg, 40mg. Taken before meals, preferably in the morning.',
-                'side_effects'      => 'Common: headache, abdominal pain, nausea, diarrhea, flatulence. Long-term: B12 deficiency, bone fractures, C. diff risk.',
+                'name' => 'Omeprazole (Prilosec)',
+                'generic_name' => 'Omeprazole',
+                'description' => 'Proton pump inhibitor (PPI) used to reduce gastric acid production.',
+                'indications' => 'GERD, erosive esophagitis, duodenal ulcers, H. pylori eradication (with antibiotics), Zollinger-Ellison syndrome.',
+                'dosage' => 'Capsules: 10mg, 20mg, 40mg. Taken before meals, preferably in the morning.',
+                'side_effects' => 'Common: headache, abdominal pain, nausea, diarrhea, flatulence. Long-term: B12 deficiency, bone fractures, C. diff risk.',
                 'contraindications' => 'Clopidogrel (reduced efficacy), methotrexate, tacrolimus, CYP2C19 substrates.',
-                'uploaded_by'       => $admin->id,
+                'uploaded_by' => $admin->id,
             ],
             [
-                'name'              => 'Sertraline (Zoloft)',
-                'generic_name'      => 'Sertraline Hydrochloride',
-                'description'       => 'Selective serotonin reuptake inhibitor (SSRI) used to treat depression, anxiety disorders, and PTSD.',
-                'indications'       => 'Major depressive disorder, panic disorder, PTSD, social anxiety disorder, OCD, premenstrual dysphoric disorder.',
-                'dosage'            => 'Tablets: 25mg, 50mg, 100mg. Oral concentrate: 20mg/mL.',
-                'side_effects'      => 'Common: nausea, diarrhea, insomnia, dizziness, fatigue, dry mouth. Rare: serotonin syndrome, suicidality in young adults.',
+                'name' => 'Sertraline (Zoloft)',
+                'generic_name' => 'Sertraline Hydrochloride',
+                'description' => 'Selective serotonin reuptake inhibitor (SSRI) used to treat depression, anxiety disorders, and PTSD.',
+                'indications' => 'Major depressive disorder, panic disorder, PTSD, social anxiety disorder, OCD, premenstrual dysphoric disorder.',
+                'dosage' => 'Tablets: 25mg, 50mg, 100mg. Oral concentrate: 20mg/mL.',
+                'side_effects' => 'Common: nausea, diarrhea, insomnia, dizziness, fatigue, dry mouth. Rare: serotonin syndrome, suicidality in young adults.',
                 'contraindications' => 'MAOIs (contraindicated), pimozide, CNS depressants, warfarin, NSAIDs. Taper when discontinuing.',
-                'uploaded_by'       => $admin->id,
+                'uploaded_by' => $admin->id,
             ],
         ];
 
@@ -166,18 +167,18 @@ class MedicaSeeder extends Seeder
 
         $doctors = collect($doctorData)->map(function ($doc) {
             $user = User::factory()->create([
-                'name'  => $doc['name'],
-                'email' => strtolower(str_replace(['Dr. ', ' '], ['', '.'], $doc['name'])) . '@hospital.test',
-                'role'  => 'rep',
+                'name' => $doc['name'],
+                'email' => strtolower(str_replace(['Dr. ', ' '], ['', '.'], $doc['name'])).'@hospital.test',
+                'role' => 'rep',
             ]);
 
             return DoctorProfile::create([
-                'user_id'           => $user->id,
-                'specialty'         => $doc['specialty'],
-                'institution'       => $doc['institution'],
-                'location'          => $doc['location'],
-                'segment'           => $doc['segment'],
-                'stance'            => $doc['stance'],
+                'user_id' => $user->id,
+                'specialty' => $doc['specialty'],
+                'institution' => $doc['institution'],
+                'location' => $doc['location'],
+                'segment' => $doc['segment'],
+                'stance' => $doc['stance'],
                 'access_difficulty' => $doc['access_difficulty'],
             ]);
         });
@@ -190,7 +191,7 @@ class MedicaSeeder extends Seeder
         $difficulties = ['easy', 'moderate', 'hard'];
         $nextStepTypes = ['Follow-up call', 'Schedule meeting', 'Send materials', 'Share case study', 'Arrange meeting'];
 
-        $scorer = new EfficiencyScoreService();
+        $scorer = new EfficiencyScoreService;
 
         foreach ($doctors as $doctor) {
             $visitCount = rand(4, 8);
@@ -207,17 +208,17 @@ class MedicaSeeder extends Seeder
                 }
 
                 $visit = Visit::create([
-                    'rep_id'              => $rep->id,
-                    'doctor_profile_id'   => $doctor->id,
-                    'visit_type'          => $visitTypes[array_rand($visitTypes)],
-                    'visit_date'          => now()->subDays($daysAgo),
-                    'notes'               => fake()->optional(0.6)->sentence(10),
-                    'engagement_quality'  => $engagementLevels[array_rand($engagementLevels)],
-                    'access_difficulty'   => $difficulties[array_rand($difficulties)],
-                    'time_spent_minutes'  => rand(5, 60),
-                    'confidence'          => rand(40, 100),
-                    'stance_before'       => $stanceBefore,
-                    'stance_after'        => $stanceAfter,
+                    'rep_id' => $rep->id,
+                    'doctor_profile_id' => $doctor->id,
+                    'visit_type' => $visitTypes[array_rand($visitTypes)],
+                    'visit_date' => now()->subDays($daysAgo),
+                    'notes' => fake()->optional(0.6)->sentence(10),
+                    'engagement_quality' => $engagementLevels[array_rand($engagementLevels)],
+                    'access_difficulty' => $difficulties[array_rand($difficulties)],
+                    'time_spent_minutes' => rand(5, 60),
+                    'confidence' => rand(40, 100),
+                    'stance_before' => $stanceBefore,
+                    'stance_after' => $stanceAfter,
                 ]);
 
                 $numObjectives = rand(1, 3);
@@ -235,13 +236,13 @@ class MedicaSeeder extends Seeder
                         ($rand <= $outcomeWeights[0] + $outcomeWeights[1] ? 'partially_met' : 'not_met');
 
                     VisitObjective::create([
-                        'visit_id'     => $visit->id,
+                        'visit_id' => $visit->id,
                         'objective_id' => $obj->id,
-                        'outcome'      => $outcome,
+                        'outcome' => $outcome,
                         'outcome_score' => match ($outcome) {
-                            'met'           => 1.0,
+                            'met' => 1.0,
                             'partially_met' => 0.5,
-                            default         => 0.0,
+                            default => 0.0,
                         },
                     ]);
                 }
@@ -256,10 +257,10 @@ class MedicaSeeder extends Seeder
                     $isCompleted = rand(1, 100) <= 40;
 
                     NextStep::create([
-                        'visit_id'     => $visit->id,
-                        'description'  => fake()->sentence(6),
-                        'type'         => $nextStepTypes[array_rand($nextStepTypes)],
-                        'due_date'     => now()->subDays($daysAgo)->addDays(rand(3, 14)),
+                        'visit_id' => $visit->id,
+                        'description' => fake()->sentence(6),
+                        'type' => $nextStepTypes[array_rand($nextStepTypes)],
+                        'due_date' => now()->subDays($daysAgo)->addDays(rand(3, 14)),
                         'is_completed' => $isCompleted,
                         'completed_at' => $isCompleted ? now()->subDays(rand(0, $daysAgo)) : null,
                     ]);
@@ -274,66 +275,66 @@ class MedicaSeeder extends Seeder
 
         foreach ($allUsers as $u) {
             Notification::create([
-                'user_id'  => $u->id,
-                'type'     => 'info',
-                'title'    => 'Welcome to Medica!',
-                'body'     => 'Your account has been set up. Explore the dashboard and start tracking your visits.',
+                'user_id' => $u->id,
+                'type' => 'info',
+                'title' => 'Welcome to Medica!',
+                'body' => 'Your account has been set up. Explore the dashboard and start tracking your visits.',
                 'priority' => 'normal',
             ]);
         }
 
         // Manager-specific notifications
         Notification::create([
-            'user_id'  => $manager->id,
-            'type'     => 'ai_insight',
-            'title'    => 'Weekly Performance Summary',
-            'body'     => 'Your team completed ' . Visit::count() . ' visits this period. Average efficiency is trending up — great work!',
+            'user_id' => $manager->id,
+            'type' => 'ai_insight',
+            'title' => 'Weekly Performance Summary',
+            'body' => 'Your team completed '.Visit::count().' visits this period. Average efficiency is trending up — great work!',
             'priority' => 'normal',
         ]);
 
         Notification::create([
-            'user_id'  => $manager->id,
-            'type'     => 'warning',
-            'title'    => 'Follow-up Reminder',
-            'body'     => 'There are overdue next-steps that need attention. Check the dashboard for details.',
+            'user_id' => $manager->id,
+            'type' => 'warning',
+            'title' => 'Follow-up Reminder',
+            'body' => 'There are overdue next-steps that need attention. Check the dashboard for details.',
             'priority' => 'high',
         ]);
 
         // Rep notifications
         foreach ($reps as $rep) {
             Notification::create([
-                'user_id'  => $rep->id,
-                'type'     => 'ai_insight',
-                'title'    => 'Coaching Tip',
-                'body'     => 'Try focusing on high-weight objectives like Clinical Data Presentation for better efficiency scores.',
+                'user_id' => $rep->id,
+                'type' => 'ai_insight',
+                'title' => 'Coaching Tip',
+                'body' => 'Try focusing on high-weight objectives like Clinical Data Presentation for better efficiency scores.',
                 'priority' => 'normal',
             ]);
 
             Notification::create([
-                'user_id'  => $rep->id,
-                'type'     => 'success',
-                'title'    => 'Achievement Unlocked',
-                'body'     => 'You completed your first batch of visits! Keep up the momentum.',
+                'user_id' => $rep->id,
+                'type' => 'success',
+                'title' => 'Achievement Unlocked',
+                'body' => 'You completed your first batch of visits! Keep up the momentum.',
                 'priority' => 'low',
             ]);
         }
 
         // Admin notification
         Notification::create([
-            'user_id'  => $admin->id,
-            'type'     => 'alert',
-            'title'    => 'System Ready',
-            'body'     => 'All modules are operational. Feature flags, notifications, and medication database are active.',
+            'user_id' => $admin->id,
+            'type' => 'alert',
+            'title' => 'System Ready',
+            'body' => 'All modules are operational. Feature flags, notifications, and medication database are active.',
             'priority' => 'high',
         ]);
 
-        $this->command->info('✅ Seeded: ' . Objective::count() . ' objectives, '
-            . ObjectionTag::count() . ' tags, '
-            . DoctorProfile::count() . ' doctors, '
-            . $reps->count() . ' reps, '
-            . Visit::count() . ' visits, '
-            . FeatureFlag::count() . ' feature flags, '
-            . Medication::count() . ' medications, '
-            . Notification::count() . ' notifications');
+        $this->command->info('✅ Seeded: '.Objective::count().' objectives, '
+            .ObjectionTag::count().' tags, '
+            .DoctorProfile::count().' doctors, '
+            .$reps->count().' reps, '
+            .Visit::count().' visits, '
+            .FeatureFlag::count().' feature flags, '
+            .Medication::count().' medications, '
+            .Notification::count().' notifications');
     }
 }

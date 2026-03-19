@@ -112,6 +112,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('onboarding/skip', function (\Illuminate\Http\Request $request) {
         $request->user()->update(['onboarding_completed' => true]);
+
         return response()->json(['success' => true]);
     })->name('onboarding.skip');
 

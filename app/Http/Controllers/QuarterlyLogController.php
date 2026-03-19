@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\QuarterlyLog;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,21 +34,21 @@ class QuarterlyLogController extends Controller
         }
 
         $logs = $query->paginate(50)->through(fn (QuarterlyLog $log) => [
-            'id'            => $log->id,
-            'user'          => $log->user?->name ?? 'System',
-            'user_role'     => $log->user?->role,
-            'action'        => $log->action,
-            'subject_type'  => $log->subject_type ? class_basename($log->subject_type) : null,
-            'subject_id'    => $log->subject_id,
-            'subject_name'  => $log->subject_name,
-            'priority'      => $log->priority,
-            'quarter'       => $log->quarter,
-            'details'       => $log->details,
-            'reviewed'      => $log->reviewed,
-            'reviewed_by'   => $log->reviewer?->name,
-            'reviewed_at'   => $log->reviewed_at?->diffForHumans(),
-            'review_notes'  => $log->review_notes,
-            'created_at'    => $log->created_at->diffForHumans(),
+            'id' => $log->id,
+            'user' => $log->user?->name ?? 'System',
+            'user_role' => $log->user?->role,
+            'action' => $log->action,
+            'subject_type' => $log->subject_type ? class_basename($log->subject_type) : null,
+            'subject_id' => $log->subject_id,
+            'subject_name' => $log->subject_name,
+            'priority' => $log->priority,
+            'quarter' => $log->quarter,
+            'details' => $log->details,
+            'reviewed' => $log->reviewed,
+            'reviewed_by' => $log->reviewer?->name,
+            'reviewed_at' => $log->reviewed_at?->diffForHumans(),
+            'review_notes' => $log->review_notes,
+            'created_at' => $log->created_at->diffForHumans(),
             'created_at_raw' => $log->created_at->toISOString(),
         ]);
 
@@ -70,14 +69,14 @@ class QuarterlyLogController extends Controller
         }
 
         return Inertia::render('dashboard/quarterly-logs/page', [
-            'logs'               => $logs,
-            'currentQuarter'     => $quarter,
-            'availableQuarters'  => $availableQuarters,
+            'logs' => $logs,
+            'currentQuarter' => $quarter,
+            'availableQuarters' => $availableQuarters,
             'stats' => [
-                'total'      => $totalLogs,
+                'total' => $totalLogs,
                 'unreviewed' => $unreviewedCount,
-                'critical'   => $criticalCount,
-                'high'       => $highCount,
+                'critical' => $criticalCount,
+                'high' => $highCount,
             ],
             'filters' => [
                 'priority' => $priority,

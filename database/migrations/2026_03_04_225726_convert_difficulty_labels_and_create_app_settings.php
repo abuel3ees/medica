@@ -36,8 +36,8 @@ return new class extends Migration
 
         // 3. Seed default company name
         DB::table('app_settings')->insert([
-            'key'        => 'company_name',
-            'value'      => 'Medica',
+            'key' => 'company_name',
+            'value' => 'Medica',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

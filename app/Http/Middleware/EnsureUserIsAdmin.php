@@ -10,7 +10,7 @@ class EnsureUserIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->hasPermissionTo('access admin panel')) {
+        if (! $request->user() || ! $request->user()->hasPermissionTo('access admin panel')) {
             abort(403, 'Unauthorized. Admin or Manager access required.');
         }
 
