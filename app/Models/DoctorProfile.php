@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DoctorProfile extends Model
@@ -50,7 +51,7 @@ class DoctorProfile extends Model
         return $this->hasMany(Visit::class);
     }
 
-    public function openLoops(): HasMany
+    public function openLoops(): HasManyThrough
     {
         return $this->hasManyThrough(
             NextStep::class,
